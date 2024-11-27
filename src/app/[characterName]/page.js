@@ -25,7 +25,7 @@ export default async function CharacterPage({ params: asyncParams }) {
     return (
       <div className={styles.errorContainer}>
         <h1>Character Not Found</h1>
-        <p>We couldn’t find a character named "{characterName}".</p>
+        <p>We couldn&apos;t find a character named &rdquo;{characterName}&rdquo;.</p>
       </div>
     );
   }
