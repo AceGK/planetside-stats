@@ -3,10 +3,13 @@ import styles from "./styles.module.scss";
 import factionNames from "@/utils/factions"; // Adjust the relative path as needed
 
 async function getCharacterData(characterName) {
-  const baseUrl = "https://census.daybreakgames.com/s:example/get/ps2:v2";
-  const endpoint = `${baseUrl}/character?name.first_lower=${characterName.toLowerCase()}&c:resolve=outfit,stat_history`;
+  const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
+
+  // Include online_status in the resolved fields
+  const endpoint = `${baseUrl}/character?name.first_lower=${characterName.toLowerCase()}&c:resolve=outfit,stat_history,online_status`;
 
   const res = await fetch(endpoint);
+
   if (!res.ok) {
     throw new Error("Failed to fetch character data");
   }
@@ -39,7 +42,10 @@ export default async function CharacterPage({ params: asyncParams }) {
     certs,
     outfit,
     stats,
+    online_status,
   } = characterData;
+
+  const isOnline = online_status?.online_status_list?.[0]?.status === "online";
 
   return (
     <div className={styles.container}>
@@ -47,6 +53,7 @@ export default async function CharacterPage({ params: asyncParams }) {
         <h1>{first}</h1>
         <p>Faction: {factionNames[faction_id]}</p>
         <p>Battle Rank: {battle_rank.value} (Prestige Level: {prestige_level})</p>
+        <p>Status: <span style={{ color: isOnline ? "green" : "red" }}>{isOnline ? "Online" : "Offline"}</span></p>
       </header>
 
       <section className={styles.section}>
