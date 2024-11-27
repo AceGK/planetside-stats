@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import styles from './styles/Home.module.scss';
+import styles from './styles/home.module.scss';
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
