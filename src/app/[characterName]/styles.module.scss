@@ -1,0 +1,79 @@
+.container {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #f9f9f9; /* Light background */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px; /* Adds rounded corners for a modern look */
+}
+
+.header {
+  text-align: center;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #ddd;
+
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+    color: #333; /* Dark text for contrast */
+  }
+
+  p {
+    margin: 5px 0;
+    color: #777; /* Subtle text color */
+  }
+}
+
+.section {
+  margin-bottom: 20px;
+
+  h2 {
+    font-size: 1.5rem;
+    color: #444; /* Darker shade for section titles */
+    background: #e6e6e6; /* Subtle background for headers */
+    padding: 10px;
+    border-radius: 5px;
+    border-bottom: none; /* Removes bottom border */
+  }
+
+  p {
+    margin: 5px 0;
+    color: #555;
+  }
+}
+
+.statsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.stat {
+  flex: 1 1 48%;
+  background: #f5f5f5; /* Subtle light gray for stat cards */
+  padding: 10px;
+  border: 1px solid #ddd; /* Soft border */
+  border-radius: 5px;
+
+  p {
+    margin: 0;
+    color: #333; /* Ensures text contrast */
+  }
+
+  strong {
+    color: #444; /* Slightly darker for emphasis */
+  }
+}
+
+.errorContainer {
+  text-align: center;
+  margin-top: 50px;
+
+  h1 {
+    color: #d9534f; /* Bootstrap's danger red */
+  }
+
+  p {
+    color: #777;
+  }
+}
