@@ -221,7 +221,12 @@ export default async function CharacterPage({ params: asyncParams }) {
 
       {/* Friends Section */}
       <section className={styles.section}>
-        <h2>Friends</h2>
+      <h2>
+    Friends{" "}
+    <span className={styles.friendsCount}>
+      {friends.length > 0 ? `(${friends.length})` : "(0)"}
+    </span>
+  </h2>
         {friends.length > 0 ? (
           <div className={styles.tableContainer}>
             <table className={styles.table}>

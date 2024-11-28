@@ -119,6 +119,13 @@
   opacity: 1;
 }
 
+.friendsCount {
+  font-size: 0.8em; 
+  vertical-align: middle; 
+  color: var(--clr-neutral-700);
+  font-weight:normal;
+}
+
 .tableContainer {
   max-height: 400px;
   overflow-y: auto;
