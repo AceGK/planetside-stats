@@ -105,7 +105,6 @@
   border: 1px solid var(--clr-neutral-500);
   border-radius: 8px;
   background-color: var(--clr-neutral-200);
-  padding: 10px;
 }
 
 .friendsTable {
@@ -118,11 +117,16 @@
 .friendsTable td {
   padding: 8px;
   border-bottom: 1px solid var(--clr-neutral-400);
+  color: var(--clr-neutral-700);
 }
 
 .friendsTable th {
-  background-color: var(--clr-neutral-300);
+  color: var(--clr-neutral-800);
   font-weight: bold;
+  position: sticky; 
+  top: 0; 
+  z-index: 2; 
+  background-color: var(--clr-neutral-300); 
 }
 
 .friendsTable tr:hover {
@@ -173,7 +177,6 @@
   max-height: 400px;
   overflow-y: auto;
   border: 1px solid var(--clr-neutral-500);
-  padding: 10px;
   background-color: var(--clr-neutral-200);
   border-radius: 8px;
 }
@@ -192,8 +195,12 @@
 }
 
 .killboardTable th {
-  background-color: var(--clr-neutral-400);
   color: var(--clr-neutral-800);
+  font-weight: bold;
+  position: sticky; 
+  top: 0; 
+  z-index: 2; 
+  background-color: var(--clr-neutral-300); 
 }
 
 .killboardTable td {

@@ -229,7 +229,7 @@ export default async function CharacterPage({ params: asyncParams }) {
             <table className={styles.friendsTable}>
               <thead>
                 <tr>
-                  <th>Status + Name</th>
+                  <th>Name</th>
                   <th>BR ~ Prestige</th>
                 </tr>
               </thead>
