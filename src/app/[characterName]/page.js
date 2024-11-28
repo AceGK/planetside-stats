@@ -32,10 +32,9 @@ function getFactionColor(factionId) {
 
 async function getFriendDetails(friendIds) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
-  const idsQuery = friendIds.join(","); // Join IDs into a single query
+  const idsQuery = friendIds.join(",");
 
-  // Fetch `faction_id` along with `character_id` and `name.first`
-  const endpoint = `${baseUrl}/character?character_id=${idsQuery}&c:show=character_id,name.first,faction_id`;
+  const endpoint = `${baseUrl}/character?character_id=${idsQuery}&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level`;
   const res = await fetch(endpoint);
 
   if (!res.ok) {
@@ -61,23 +60,25 @@ async function getCharacterFriends(characterId) {
   const characterFriendData = data.characters_friend_list?.[0];
   const friendList = characterFriendData?.friend_list || [];
 
-  // Extract all friend IDs
   const friendIds = friendList.map((friend) => friend.character_id);
-
   if (friendIds.length === 0) return [];
 
-  // Fetch details for all friends
   const friendDetails = await getFriendDetails(friendIds);
 
-  // Map `faction_id` and `name` back to the friends list
-  return friendList.map((friend) => {
+  // Map and include `battle_rank` and `prestige_level`
+  const friends = friendList.map((friend) => {
     const friendDetail = friendDetails.find((fd) => fd.character_id === friend.character_id);
     return {
       ...friend,
       name: friendDetail?.name?.first || "Unknown",
-      faction_id: friendDetail?.faction_id || null, // Include faction_id
+      faction_id: friendDetail?.faction_id || null,
+      battle_rank: friendDetail?.battle_rank?.value || "N/A",
+      prestige_level: friendDetail?.prestige_level || 0,
     };
   });
+
+  // Sort alphabetically by name
+  return friends.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 
@@ -185,11 +186,14 @@ export default async function CharacterPage({ params: asyncParams }) {
                   href={`/${friend.name}`}
                   style={{
                     textDecoration: "none",
-                    color: "inherit", 
+                    color: "inherit",
                   }}
                 >
-                  {friend.name} 
-                  {friend.online === "1" ? " (Online)" : " (Offline)"}
+                  <span style={{fontWeight:'bold'}}>{friend.name}</span> [BR {friend.battle_rank} ~ {friend.prestige_level}]
+                  <span
+                    className={`${styles.statusDot} ${friend.online === "1" ? styles.online : styles.offline}`}
+                    data-tooltip={friend.online === "1" ? "Online" : "Offline"}
+                  ></span>
                 </Link>
               </li>
             ))}
@@ -198,6 +202,8 @@ export default async function CharacterPage({ params: asyncParams }) {
           <p>This character has no friends listed.</p>
         )}
       </section>
+
+
 
 
 

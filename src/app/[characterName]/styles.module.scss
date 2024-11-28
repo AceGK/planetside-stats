@@ -98,3 +98,43 @@
 .friend:last-child {
   border-bottom: none;
 }
+
+.statusDot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-left: 8px;
+  vertical-align: middle;
+  position: relative;
+  cursor: pointer;
+}
+
+.statusDot.online {
+  background-color: green;
+}
+
+.statusDot.offline {
+  background-color: red;
+}
+
+.statusDot::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: black;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.statusDot:hover::after {
+  opacity: 1;
+}
