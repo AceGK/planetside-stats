@@ -5,6 +5,24 @@ import faction from "@/utils/factions";
 import FactionLogo from "@/components/FactionLogo";
 import { worldNames, getCharacterWorldData } from "@/utils/world";
 
+const factionColors = {
+  "1": "#d90005", // Terran Republic
+  "2": "#92009d", // Vanu Sovereignty
+  "3": "#17d", // New Conglomerate
+  "4": "#f4f4f4", // Nanite Systems Operatives
+};
+
+function getFactionColor(factionId) {
+  return factionColors[factionId] || "var(--clr-default)";
+}
+
+const FactionColoredName = ({ name, factionId }) => (
+  <span style={{ color: getFactionColor(factionId), fontWeight: 'bold' }} className={styles.factionName}>
+    {name}
+  </span>
+);
+
+// Main component
 async function getCharacterData(characterName) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
   const endpoint = `${baseUrl}/character?name.first_lower=${characterName.toLowerCase()}&c:resolve=outfit,stat_history,online_status`;
@@ -17,17 +35,6 @@ async function getCharacterData(characterName) {
 
   const data = await res.json();
   return data.character_list?.[0] || null;
-}
-
-const factionColors = {
-  "1": "#d90005", // Terran Republic
-  "2": "#92009d", // Vanu Sovereignty
-  "3": "#17d", // New Conglomerate
-  "4": "#f4f4f4", // Nanite Systems Operatives
-};
-
-function getFactionColor(factionId) {
-  return factionColors[factionId] || "var(--clr-default)";
 }
 
 async function getFriendDetails(friendIds) {
@@ -44,7 +51,6 @@ async function getFriendDetails(friendIds) {
   const data = await res.json();
   return data.character_list || [];
 }
-
 
 async function getCharacterFriends(characterId) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
@@ -65,8 +71,7 @@ async function getCharacterFriends(characterId) {
 
   const friendDetails = await getFriendDetails(friendIds);
 
-  // Map and include `battle_rank` and `prestige_level`
-  const friends = friendList.map((friend) => {
+  return friendList.map((friend) => {
     const friendDetail = friendDetails.find((fd) => fd.character_id === friend.character_id);
     return {
       ...friend,
@@ -75,11 +80,54 @@ async function getCharacterFriends(characterId) {
       battle_rank: friendDetail?.battle_rank?.value || "N/A",
       prestige_level: friendDetail?.prestige_level || 0,
     };
-  });
-
-  // Sort alphabetically by name
-  return friends.sort((a, b) => a.name.localeCompare(b.name));
+  }).sort((a, b) => a.name.localeCompare(b.name));
 }
+
+async function getKillboardData(characterId) {
+  const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
+  const killboardEndpoint = `${baseUrl}/characters_event_grouped/?character_id=${characterId}&type=KILL&c:limit=101&c:sort=count:-1`;
+
+  const res = await fetch(killboardEndpoint);
+  if (!res.ok) {
+    throw new Error("Failed to fetch killboard data");
+  }
+
+  const data = await res.json();
+  const killEvents = data.characters_event_grouped_list || [];
+
+  const characterIds = killEvents.map((event) => event.character_id);
+  if (characterIds.length === 0) {
+    return [];
+  }
+
+  const namesEndpoint = `${baseUrl}/character?character_id=${characterIds.join(",")}&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level,online_status`;
+  const namesRes = await fetch(namesEndpoint);
+
+  if (!namesRes.ok) {
+    throw new Error("Failed to fetch character data for names");
+  }
+
+  const namesData = await namesRes.json();
+  const namesList = namesData.character_list || [];
+
+  return killEvents
+    .map((event) => {
+      const matchedCharacter = namesList.find((character) => character.character_id === event.character_id);
+      return {
+        characterId: event.character_id,
+        name: matchedCharacter?.name?.first || "Name Unavailable",
+        factionId: matchedCharacter?.faction_id || null,
+        kills: event.count,
+        battleRank: matchedCharacter?.battle_rank?.value || "N/A",
+        prestigeLevel: matchedCharacter?.prestige_level || 0,
+        isOnline: matchedCharacter?.online_status?.status === "online",
+      };
+    })
+    .filter((entry) => entry.characterId !== characterId) // Exclude the current character
+    .slice(0, 100); // Ensure only 100 entries
+}
+
+
 
 
 
@@ -111,6 +159,9 @@ export default async function CharacterPage({ params: asyncParams }) {
     stats,
     online_status,
   } = characterData;
+
+  // Fetch detailed killboard data
+  const killboard = await getKillboardData(character_id);
 
   // Fetch character world data using character_id
   const worldId = await getCharacterWorldData(character_id);
@@ -170,38 +221,82 @@ export default async function CharacterPage({ params: asyncParams }) {
         </div>
       </section>
 
+      {/* friends */}
       <section className={styles.section}>
         <h2>Friends</h2>
         {friends.length > 0 ? (
-          <ul className={styles.friendsContainer}>
-            {friends.map((friend, index) => (
-              <li
-                key={index}
-                className={styles.friend}
-                style={{
-                  color: getFactionColor(friend.faction_id),
-                }}
-              >
-                <Link
-                  href={`/${friend.name}`}
-                  style={{
-                    textDecoration: "none",
-                    color: "inherit",
-                  }}
-                >
-                  <span style={{fontWeight:'bold'}}>{friend.name}</span> [BR {friend.battle_rank} ~ {friend.prestige_level}]
-                  <span
-                    className={`${styles.statusDot} ${friend.online === "1" ? styles.online : styles.offline}`}
-                    data-tooltip={friend.online === "1" ? "Online" : "Offline"}
-                  ></span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <div className={styles.friendsTableContainer}>
+            <table className={styles.friendsTable}>
+              <thead>
+                <tr>
+                  <th>Status + Name</th>
+                  <th>BR ~ Prestige</th>
+                </tr>
+              </thead>
+              <tbody>
+                {friends.map((friend, index) => (
+                  <tr key={index}>
+                    <td>
+                      <span
+                        className={`${styles.statusDot} ${friend.online === "1" ? styles.online : styles.offline}`}
+                        data-tooltip={friend.online === "1" ? "Online" : "Offline"}
+                      ></span>{" "}
+                      <Link href={`/${friend.name}`} style={{ textDecoration: "none" }}>
+                        <FactionColoredName name={friend.name} factionId={friend.faction_id} />
+                      </Link>
+                    </td>
+                    <td>
+                      {friend.battle_rank} ~ {friend.prestige_level}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : (
           <p>This character has no friends listed.</p>
         )}
       </section>
+
+      {/* kill board */}
+      <section className={styles.section}>
+        <h2>Killboard</h2>
+        {killboard.length > 0 ? (
+          <div className={styles.killboardContainer}>
+            <table className={styles.killboardTable}>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Kills</th>
+                  <th>BR ~ Prestige</th>
+                </tr>
+              </thead>
+              <tbody>
+                {killboard.map((entry, index) => (
+                  <tr key={index}>
+                    <td>#{index + 1}</td>
+                    <td>
+                      <span
+                        className={`${styles.statusDot} ${entry.isOnline ? styles.online : styles.offline}`}
+                        data-tooltip={entry.isOnline ? "Online" : "Offline"}
+                      ></span>{" "}
+                      <FactionColoredName name={entry.name} factionId={entry.factionId} />
+                    </td>
+                    <td>{entry.kills}</td>
+                    <td>
+                      {entry.battleRank} ~ {entry.prestigeLevel}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p>No kills recorded.</p>
+        )}
+      </section>
+
 
 
 
