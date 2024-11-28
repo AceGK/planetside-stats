@@ -1,0 +1,45 @@
+:root {
+  --clr-neutral-100: #ffffff; // Pure white
+  --clr-neutral-200: #f9f9f9; // Off-white for backgrounds
+  --clr-neutral-300: #f5f5f5; // Very light gray for cards
+  --clr-neutral-400: #e6e6e6; // Light gray for sections or headers
+  --clr-neutral-500: #ddd;     // Medium gray for borders
+  --clr-neutral-600: #aaa;     // Neutral medium-dark gray
+  --clr-neutral-700: #777;     // Subtle dark gray for secondary text
+  --clr-neutral-800: #555;     // Dark gray for text
+  --clr-neutral-900: #333;     // Very dark gray, almost black
+  --clr-neutral-950: #000000;  // Pure black
+
+  // Terran Republic Colors
+  --clr-tr-red: #C80815;
+  --clr-tr-dark-gray: #4A4A4A;
+
+  // New Conglomerate Colors
+  --clr-nc-blue: #003366;
+  --clr-nc-yellow: #FFCC00;
+  --clr-nc-dark-gray: #2C2C2C;
+
+  // Vanu Sovereignty Colors
+  --clr-vs-purple: #702963;
+  --clr-vs-teal: #33FFDD;
+  --clr-vs-dark-gray: #2E2E2E;
+
+  // Box Shadows
+  --box-shadow-light: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --box-shadow-medium: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+
+[data-theme="dark"] {
+  /* Neutral Colors - Dark Theme */
+  --clr-neutral-100: #000000; /* Pure black */
+  --clr-neutral-200: #1a1a1a; /* Dark background */
+  --clr-neutral-300: #333333; /* Very dark gray for cards */
+  --clr-neutral-400: #4d4d4d; /* Dark gray for sections or headers */
+  --clr-neutral-500: #666666; /* Medium-dark gray for borders */
+  --clr-neutral-600: #808080; /* Neutral medium gray */
+  --clr-neutral-700: #999999; /* Subtle light gray for secondary text */
+  --clr-neutral-800: #b3b3b3; /* Lighter gray for text */
+  --clr-neutral-900: #cccccc; /* Very light gray */
+  --clr-neutral-950: #ffffff; /* Pure white */
+}

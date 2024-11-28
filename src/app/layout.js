@@ -1,6 +1,7 @@
 import localFont from "next/font/local";
 import "./styles/globals.scss";
 import PasswordProtect from "../components/PasswordProtect";
+import ThemeProvider from "../components/ThemeProvider"; // Import the new ThemeProvider
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -22,7 +23,9 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <PasswordProtect>{children}</PasswordProtect>
+        <ThemeProvider>
+          <PasswordProtect>{children}</PasswordProtect>
+        </ThemeProvider>
       </body>
     </html>
   );

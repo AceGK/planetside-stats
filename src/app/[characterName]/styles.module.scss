@@ -1,26 +1,28 @@
+
+
 .container {
   max-width: 900px;
   margin: 20px auto;
   padding: 20px;
-  background: #f9f9f9; /* Light background */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  border-radius: 8px; /* Adds rounded corners for a modern look */
+  background: var(--clr-neutral-200); // Light background
+  box-shadow: var(--box-shadow-light);
+  border-radius: 8px; // Adds rounded corners for a modern look
 }
 
 .header {
   text-align: center;
   padding-bottom: 20px;
-  border-bottom: 2px solid #ddd;
+  border-bottom: 2px solid var(--clr-neutral-500);
 
   h1 {
     margin: 0;
     font-size: 2rem;
-    color: #333; /* Dark text for contrast */
+    color: var(--clr-neutral-900); // Dark text for contrast
   }
 
   p {
     margin: 5px 0;
-    color: #777; /* Subtle text color */
+    color: var(--clr-neutral-700); // Subtle text color
   }
 }
 
@@ -29,16 +31,17 @@
 
   h2 {
     font-size: 1.5rem;
-    color: #444; /* Darker shade for section titles */
-    background: #e6e6e6; /* Subtle background for headers */
+    color: var(--clr-neutral-800); // Darker shade for section titles
+    background: var(--clr-neutral-400); // Subtle background for headers
     padding: 10px;
     border-radius: 5px;
-    border-bottom: none; /* Removes bottom border */
+    border-bottom: none; // Removes bottom border
+    margin-bottom:10px;
   }
 
   p {
     margin: 5px 0;
-    color: #555;
+    color: var(--clr-neutral-700);
   }
 }
 
@@ -50,18 +53,18 @@
 
 .stat {
   flex: 1 1 48%;
-  background: #f5f5f5; /* Subtle light gray for stat cards */
+  background: var(--clr-neutral-300); // Subtle light gray for stat cards
   padding: 10px;
-  border: 1px solid #ddd; /* Soft border */
+  border: 1px solid var(--clr-neutral-500); // Soft border
   border-radius: 5px;
 
   p {
     margin: 0;
-    color: #333; /* Ensures text contrast */
+    color: var(--clr-neutral-900); // Ensures text contrast
   }
 
   strong {
-    color: #444; /* Slightly darker for emphasis */
+    color: var(--clr-neutral-800); // Slightly darker for emphasis
   }
 }
 
@@ -70,30 +73,29 @@
   margin-top: 50px;
 
   h1 {
-    color: #d9534f; /* Bootstrap's danger red */
+    color: var(--clr-neutral-950); // Darkest color for emphasis
   }
 
   p {
-    color: #777;
+    color: var(--clr-neutral-700);
   }
 }
 
-
 .friendsContainer {
-  max-height: 300px; /* Set the maximum height */
-  overflow-y: auto; /* Enable vertical scrolling */
-  border: 1px solid #ddd;
+  max-height: 300px; // Set the maximum height
+  overflow-y: auto; // Enable vertical scrolling
+  border: 1px solid var(--clr-neutral-500);
   padding: 10px;
-  background-color: #f9f9f9;
+  background-color: var(--clr-neutral-200);
   border-radius: 8px;
 }
 
 .friend {
   margin-bottom: 10px;
   padding: 5px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--clr-neutral-400);
 }
 
 .friend:last-child {
-  border-bottom: none; /* Remove border for the last item */
+  border-bottom: none; // Remove border for the last item
 }

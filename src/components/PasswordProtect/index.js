@@ -1,10 +1,18 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function PasswordProtect({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState("");
+  const [isLocalhost, setIsLocalhost] = useState(false);
+
+  useEffect(() => {
+    if (window.location.hostname === "localhost") {
+      setIsAuthenticated(true);
+      setIsLocalhost(true);
+    }
+  }, []);
 
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
@@ -16,7 +24,7 @@ export default function PasswordProtect({ children }) {
     }
   };
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !isLocalhost) {
     return (
       <div style={{ textAlign: "center", marginTop: "20%" }}>
         <h1>Coming Soon</h1>

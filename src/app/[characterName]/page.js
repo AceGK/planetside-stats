@@ -1,6 +1,7 @@
 import React from "react";
 import styles from "./styles.module.scss";
-import factionNames from "@/utils/factions";
+import faction from "@/utils/factions";
+import FactionLogo from "@/components/FactionLogo";
 import { worldNames, getCharacterWorldData } from "@/utils/world";
 
 async function getCharacterData(characterName) {
@@ -33,8 +34,18 @@ export default async function CharacterPage({ params: asyncParams }) {
     );
   }
 
-  const { character_id, name, faction_id, battle_rank, prestige_level, times, certs, outfit, stats, online_status } =
-    characterData;
+  const {
+    character_id,
+    name,
+    faction_id,
+    battle_rank,
+    prestige_level,
+    times,
+    certs,
+    outfit,
+    stats,
+    online_status,
+  } = characterData;
 
   // Fetch character world data using character_id
   const worldId = await getCharacterWorldData(character_id);
@@ -47,7 +58,7 @@ export default async function CharacterPage({ params: asyncParams }) {
     <div className={styles.container}>
       <header className={styles.header}>
         <h1>{name.first}</h1>
-        <p>Faction: {factionNames[faction_id]}</p>
+        <FactionLogo factionId={faction_id} />
         <p>Battle Rank: {battle_rank.value} (Prestige Level: {prestige_level})</p>
         <p>Server: {serverName}</p>
         <p>Status: <span style={{ color: isOnline ? "green" : "red" }}>{isOnline ? "Online" : "Offline"}</span></p>
