@@ -1,12 +1,10 @@
-
-
 .container {
   max-width: 900px;
   margin: 20px auto;
   padding: 20px;
-  background: var(--clr-neutral-200); // Light background
+  background: var(--clr-neutral-200);
   box-shadow: var(--box-shadow-light);
-  border-radius: 8px; // Adds rounded corners for a modern look
+  border-radius: 8px;
 }
 
 .header {
@@ -17,12 +15,12 @@
   h1 {
     margin: 0;
     font-size: 2rem;
-    color: var(--clr-neutral-900); // Dark text for contrast
+    color: var(--clr-neutral-900);
   }
 
   p {
     margin: 5px 0;
-    color: var(--clr-neutral-700); // Subtle text color
+    color: var(--clr-neutral-700);
   }
 }
 
@@ -31,12 +29,12 @@
 
   h2 {
     font-size: 1.5rem;
-    color: var(--clr-neutral-800); // Darker shade for section titles
-    background: var(--clr-neutral-400); // Subtle background for headers
+    color: var(--clr-neutral-800);
+    background: var(--clr-neutral-400);
     padding: 10px;
     border-radius: 5px;
-    border-bottom: none; // Removes bottom border
-    margin-bottom:10px;
+    border-bottom: none;
+    margin-bottom: 10px;
   }
 
   p {
@@ -53,18 +51,18 @@
 
 .stat {
   flex: 1 1 48%;
-  background: var(--clr-neutral-300); // Subtle light gray for stat cards
+  background: var(--clr-neutral-300);
   padding: 10px;
-  border: 1px solid var(--clr-neutral-500); // Soft border
+  border: 1px solid var(--clr-neutral-500);
   border-radius: 5px;
 
   p {
     margin: 0;
-    color: var(--clr-neutral-900); // Ensures text contrast
+    color: var(--clr-neutral-900);
   }
 
   strong {
-    color: var(--clr-neutral-800); // Slightly darker for emphasis
+    color: var(--clr-neutral-800);
   }
 }
 
@@ -73,7 +71,7 @@
   margin-top: 50px;
 
   h1 {
-    color: var(--clr-neutral-950); // Darkest color for emphasis
+    color: var(--clr-neutral-950);
   }
 
   p {
@@ -82,8 +80,8 @@
 }
 
 .friendsContainer {
-  max-height: 300px; // Set the maximum height
-  overflow-y: auto; // Enable vertical scrolling
+  max-height: 400px;
+  overflow-y: auto;
   border: 1px solid var(--clr-neutral-500);
   padding: 10px;
   background-color: var(--clr-neutral-200);
@@ -94,8 +92,9 @@
   margin-bottom: 10px;
   padding: 5px;
   border-bottom: 1px solid var(--clr-neutral-400);
+  cursor: pointer;
 }
 
 .friend:last-child {
-  border-bottom: none; // Remove border for the last item
+  border-bottom: none;
 }
