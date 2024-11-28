@@ -33,7 +33,7 @@ export default function ThemeProvider({ children }) {
         <nav>
           {/* Add a button to toggle theme */}
           <button onClick={toggleTheme}>
-            Switch to {theme === "light" ? "Dark" : "Light"} Mode
+            {theme === "light" ? "Dark" : "Light"}
           </button>
         </nav>
       </header>
