@@ -77,3 +77,23 @@
     color: #777;
   }
 }
+
+
+.friendsContainer {
+  max-height: 300px; /* Set the maximum height */
+  overflow-y: auto; /* Enable vertical scrolling */
+  border: 1px solid #ddd;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+}
+
+.friend {
+  margin-bottom: 10px;
+  padding: 5px;
+  border-bottom: 1px solid #eee;
+}
+
+.friend:last-child {
+  border-bottom: none; /* Remove border for the last item */
+}
