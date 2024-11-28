@@ -4,6 +4,7 @@ import styles from "./styles.module.scss";
 import faction from "@/utils/factions";
 import FactionLogo from "@/components/FactionLogo";
 import { worldNames, getCharacterWorldData } from "@/utils/world";
+import TimePlayed from "@/components/TimePlayed";
 
 const factionColors = {
   "3": "#d90005", // Terran Republic (Red)
@@ -171,6 +172,8 @@ export default async function CharacterPage({ params: asyncParams }) {
   // Determine if the character is online
   const isOnline = online_status?.online_status_list?.[0]?.status === "online";
 
+  
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -185,7 +188,7 @@ export default async function CharacterPage({ params: asyncParams }) {
         <h2>General Information</h2>
         <p><strong>Creation Date:</strong> {new Date(times.creation * 1000).toLocaleDateString()}</p>
         <p><strong>Last Login:</strong> {new Date(times.last_login * 1000).toLocaleString()}</p>
-        <p><strong>Minutes Played:</strong> {times.minutes_played.toLocaleString()} minutes</p>
+        <TimePlayed minutesPlayed={times.minutes_played} />
       </section>
 
       {outfit && (
