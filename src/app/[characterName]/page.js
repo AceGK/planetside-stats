@@ -6,10 +6,10 @@ import FactionLogo from "@/components/FactionLogo";
 import { worldNames, getCharacterWorldData } from "@/utils/world";
 
 const factionColors = {
-  "1": "#d90005", // Terran Republic
-  "2": "#92009d", // Vanu Sovereignty
-  "3": "#17d", // New Conglomerate
-  "4": "#f4f4f4", // Nanite Systems Operatives
+  "3": "#d90005", // Terran Republic (Red)
+  "2": "#007dc3", // New Conglomerate (Blue)
+  "1": "#9139d0",    // Vanu Sovereignty (Purple)
+  "4": "#b7b7b7", // Nanite Systems Operatives (Gray/White)
 };
 
 function getFactionColor(factionId) {
@@ -85,7 +85,7 @@ async function getCharacterFriends(characterId) {
 
 async function getKillboardData(characterId) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
-  const killboardEndpoint = `${baseUrl}/characters_event_grouped/?character_id=${characterId}&type=KILL&c:limit=101&c:sort=count:-1`;
+  const killboardEndpoint = `${baseUrl}/characters_event_grouped/?character_id=${characterId}&type=KILL&c:limit=200&c:sort=count:-1`;
 
   const res = await fetch(killboardEndpoint);
   if (!res.ok) {
@@ -123,9 +123,10 @@ async function getKillboardData(characterId) {
         isOnline: matchedCharacter?.online_status?.status === "online",
       };
     })
-    .filter((entry) => entry.characterId !== characterId) // Exclude the current character
+    .filter((entry) => entry.name !== "Name Unavailable" && entry.characterId !== characterId) // Remove unavailable names and current character
     .slice(0, 100); // Ensure only 100 entries
 }
+
 
 
 export default async function CharacterPage({ params: asyncParams }) {
