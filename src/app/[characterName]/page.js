@@ -128,9 +128,6 @@ async function getKillboardData(characterId) {
 }
 
 
-
-
-
 export default async function CharacterPage({ params: asyncParams }) {
   const params = await asyncParams;
   const { characterName } = params;
@@ -221,12 +218,12 @@ export default async function CharacterPage({ params: asyncParams }) {
         </div>
       </section>
 
-      {/* friends */}
+      {/* Friends Section */}
       <section className={styles.section}>
         <h2>Friends</h2>
         {friends.length > 0 ? (
-          <div className={styles.friendsTableContainer}>
-            <table className={styles.friendsTable}>
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
               <thead>
                 <tr>
                   <th>Name</th>
@@ -258,12 +255,12 @@ export default async function CharacterPage({ params: asyncParams }) {
         )}
       </section>
 
-      {/* kill board */}
+      {/* Killboard Section */}
       <section className={styles.section}>
         <h2>Killboard</h2>
         {killboard.length > 0 ? (
-          <div className={styles.killboardContainer}>
-            <table className={styles.killboardTable}>
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
               <thead>
                 <tr>
                   <th>#</th>
@@ -281,7 +278,9 @@ export default async function CharacterPage({ params: asyncParams }) {
                         className={`${styles.statusDot} ${entry.isOnline ? styles.online : styles.offline}`}
                         data-tooltip={entry.isOnline ? "Online" : "Offline"}
                       ></span>{" "}
-                      <FactionColoredName name={entry.name} factionId={entry.factionId} />
+                      <Link href={`/${entry.name}`} style={{ textDecoration: "none" }}>
+                        <FactionColoredName name={entry.name} factionId={entry.factionId} />
+                      </Link>
                     </td>
                     <td>{entry.kills}</td>
                     <td>
@@ -296,10 +295,6 @@ export default async function CharacterPage({ params: asyncParams }) {
           <p>No kills recorded.</p>
         )}
       </section>
-
-
-
-
 
 
     </div>
