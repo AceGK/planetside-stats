@@ -4,7 +4,6 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: #f4f4f4;
   padding: 20px;
 }
 
@@ -14,13 +13,13 @@
   h1 {
     margin-bottom: 10px;
     font-size: 2.5rem;
-    color: #333;
+    color: var(--clr-neutral-900);
   }
 
   p {
     margin: 0;
     font-size: 1.2rem;
-    color: #666;
+    color: var(--clr-neutral-700);
   }
 }
 
@@ -40,21 +39,20 @@
   max-width: 400px;
   padding: 10px;
   font-size: 1rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--clr-neutral-500);
   border-radius: 5px;
+  background: var(--clr-neutral-100);
+  color: var(--clr-neutral-900);
 }
 
 .searchButton {
   padding: 10px 20px;
   font-size: 1rem;
-  background-color: #0070f3;
-  color: white;
+  background-color: var(--clr-neutral-600);
+  color: var(--clr-neutral-100);
   border: none;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.2s;
 
-  &:hover {
-    background-color: #005bb5;
-  }
 }
