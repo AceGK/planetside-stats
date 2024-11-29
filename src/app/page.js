@@ -6,28 +6,41 @@ import styles from './styles/home.module.scss';
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchType, setSearchType] = useState('player'); // Default to 'player'
   const router = useRouter();
 
   const handleSearch = (e) => {
     e.preventDefault();
 
     if (searchQuery.trim()) {
-      // Navigate to the player's profile page
-      router.push(`/player/${searchQuery}`);
+      // Navigate based on the selected search type
+      const path = searchType === 'player' ? `/player/${searchQuery}` : `/outfit/${searchQuery}`;
+      router.push(path);
     }
   };
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1>Planetside 2 Character Search</h1>
-        <p>Search for your favorite players and view their stats!</p>
+        <h1>
+          Planetside 2{' '}
+          <select
+            value={searchType}
+            onChange={(e) => setSearchType(e.target.value)}
+            className={styles.inlineDropdown}
+            aria-label="Search Type"
+          >
+            <option value="player">Player</option>
+            <option value="outfit">Outfit</option>
+          </select>{' '}
+          Search
+        </h1>
       </header>
       <main className={styles.main}>
         <form onSubmit={handleSearch} className={styles.searchForm}>
           <input
             type="text"
-            placeholder="Enter player name"
+            placeholder={`Enter ${searchType === 'player' ? 'player' : 'outfit'} name`}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={styles.searchInput}

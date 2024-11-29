@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link"; // Import Link from Next.js
 import styles from "./styles.module.scss";
 import FactionLogo from "@/components/FactionLogo";
 
@@ -40,35 +41,29 @@ async function fetchOutfitData(outfitName) {
     return null;
   }
 
-  // Ensure members is always an array
   outfit.members = Array.isArray(outfit.members) ? outfit.members : [];
 
-  // Extract member data with ranks
   const membersWithRanks = outfit.members.map((member) => ({
     character_id: member.character_id,
     rank: member.rank,
     rank_ordinal: member.rank_ordinal,
   }));
 
-  // Fetch detailed member data
   const memberIds = membersWithRanks.map((member) => member.character_id);
   const detailedMembers = await fetchMemberDetails(memberIds);
 
-  // Fetch online statuses
   const onlineStatuses = await fetchOnlineStatuses(memberIds);
 
-  // Merge detailed member data with ranks and online statuses
   outfit.members = detailedMembers.map((member) => {
     const memberRankInfo = membersWithRanks.find((m) => m.character_id === member.character_id);
     return {
       ...member,
       rank: memberRankInfo?.rank || "Unknown",
       rank_ordinal: parseInt(memberRankInfo?.rank_ordinal) || Number.MAX_SAFE_INTEGER,
-      isOnline: onlineStatuses[member.character_id] || false, // Add online status
+      isOnline: onlineStatuses[member.character_id] || false,
     };
   });
 
-  // Determine the outfit faction by the most common faction ID, ignoring NS Operatives
   const factionCounts = outfit.members.reduce((acc, member) => {
     if (["1", "2", "3"].includes(member.faction_id)) {
       acc[member.faction_id] = (acc[member.faction_id] || 0) + 1;
@@ -83,12 +78,10 @@ async function fetchOutfitData(outfitName) {
     return mostCommonFaction;
   }, null);
 
-  // Sort members by rank_ordinal (ascending order)
   outfit.members.sort((a, b) => a.rank_ordinal - b.rank_ordinal);
 
   return outfit;
 }
-
 
 async function fetchOnlineStatuses(characterIds) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
@@ -103,7 +96,7 @@ async function fetchOnlineStatuses(characterIds) {
   const data = await res.json();
   const statusList = data.characters_online_status_list || [];
   return statusList.reduce((acc, status) => {
-    acc[status.character_id] = status.online_status === "1"; // Map character_id to true/false for online status
+    acc[status.character_id] = status.online_status === "1";
     return acc;
   }, {});
 }
@@ -126,7 +119,6 @@ async function fetchMemberDetails(memberIds) {
 export default async function OutfitPage({ params }) {
   const { outfitName } = params;
 
-  // Fetch outfit data
   const outfitData = await fetchOutfitData(outfitName);
 
   if (!outfitData) {
@@ -175,10 +167,14 @@ export default async function OutfitPage({ params }) {
                         className={`${styles.statusDot} ${member.isOnline ? styles.online : styles.offline}`}
                         data-tooltip={member.isOnline ? "Online" : "Offline"}
                       ></span>{" "}
-                      <FactionColoredCharacterName
-                        name={member?.name?.first || "Unknown"}
-                        factionId={member?.faction_id}
-                      />
+                      <Link href={`/player/${member?.name?.first}`} passHref>
+                        
+                          <FactionColoredCharacterName
+                            name={member?.name?.first || "Unknown"}
+                            factionId={member?.faction_id}
+                          />
+                   
+                      </Link>
                     </td>
                     <td>
                       {member?.battle_rank?.value || "N/A"} ~{" "}
@@ -195,6 +191,4 @@ export default async function OutfitPage({ params }) {
       </section>
     </div>
   );
-
 }
-
