@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { FaMagnifyingGlass } from "react-icons/fa6"; // Import the icon
 import styles from './styles/home.module.scss';
 
 export default function HomePage() {
@@ -46,7 +47,7 @@ export default function HomePage() {
             className={styles.searchInput}
           />
           <button type="submit" className={styles.searchButton}>
-            Search
+            <FaMagnifyingGlass />
           </button>
         </form>
       </main>
