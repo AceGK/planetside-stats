@@ -195,14 +195,14 @@ export default async function CharacterPage({ params: asyncParams }) {
   // Determine if the character is online
   const isOnline = characterData.online_status === "1";
 
-  console.log(killboard)
+  // console.log(killboard)
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <h1>{name.first}</h1>
         <FactionLogo factionId={faction_id} />
-        <p>Battle Rank: {battle_rank.value} (Prestige Level: {prestige_level})</p>
+        <p>Battle Rank: {battle_rank.value} ~ Prestige Level: {prestige_level}</p>
         <p>Server: {serverName}</p>
         <p>
           Status:{" "}
@@ -224,12 +224,20 @@ export default async function CharacterPage({ params: asyncParams }) {
       </section>
 
       {outfit && (
-        <section className={styles.section}>
-          <h2>Outfit</h2>
-          <p><strong>Outfit Name:</strong> {outfit.name} (Alias: {outfit.alias})</p>
-          <p><strong>Members:</strong> {outfit.member_count}</p>
-        </section>
-      )}
+  <section className={styles.section}>
+    <h2>Outfit</h2>
+    <p>
+      <strong>Outfit Name:</strong>{" "}
+      <Link href={`/outfit/${encodeURIComponent(outfit.name)}`}>
+        {outfit.name}
+      </Link>{" "}
+      [{outfit.alias}]
+    </p>
+    <p>
+      <strong>Members:</strong> {outfit.member_count}
+    </p>
+  </section>
+)}
 
       <section className={styles.section}>
         <h2>Certifications</h2>
@@ -279,7 +287,7 @@ export default async function CharacterPage({ params: asyncParams }) {
                         className={`${styles.statusDot} ${friend.online === "1" ? styles.online : styles.offline}`}
                         data-tooltip={friend.online === "1" ? "Online" : "Offline"}
                       ></span>{" "}
-                      <Link href={`/${friend.name}`} style={{ textDecoration: "none" }}>
+                      <Link href={`/player/${friend.name}`} style={{ textDecoration: "none" }}>
                         <FactionColoredName name={friend.name} factionId={friend.faction_id} />
                       </Link>
                     </td>
@@ -319,7 +327,7 @@ export default async function CharacterPage({ params: asyncParams }) {
                         className={`${styles.statusDot} ${entry.isOnline ? styles.online : styles.offline}`}
                         data-tooltip={entry.isOnline ? "Online" : "Offline"}
                       ></span>{" "}
-                      <Link href={`/${entry.name}`} style={{ textDecoration: "none" }}>
+                      <Link href={`/player/${entry.name}`} style={{ textDecoration: "none" }}>
                         <FactionColoredName name={entry.name} factionId={entry.factionId} />
                       </Link>
                     </td>

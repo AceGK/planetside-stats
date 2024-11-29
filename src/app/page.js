@@ -13,7 +13,7 @@ export default function HomePage() {
 
     if (searchQuery.trim()) {
       // Navigate to the player's profile page
-      router.push(`/${searchQuery}`);
+      router.push(`/player/${searchQuery}`);
     }
   };
 

@@ -1,0 +1,200 @@
+import React from "react";
+import styles from "./styles.module.scss";
+import FactionLogo from "@/components/FactionLogo";
+
+const factionColors = {
+  "3": "#d90005", // Terran Republic (Red)
+  "2": "#007dc3", // New Conglomerate (Blue)
+  "1": "#9139d0", // Vanu Sovereignty (Purple)
+  "4": "#b7b7b7", // Nanite Systems Operatives (Gray/White)
+};
+
+function getFactionColor(factionId) {
+  return factionColors[factionId] || "var(--clr-default)";
+}
+
+const FactionColoredCharacterName = ({ name, factionId }) => (
+  <span
+    style={{ color: getFactionColor(factionId), fontWeight: "bold" }}
+    className={styles.factionName}
+  >
+    {name}
+  </span>
+);
+
+async function fetchOutfitData(outfitName) {
+  const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
+  const outfitEndpoint = `${baseUrl}/outfit?name_lower=${outfitName.toLowerCase()}&c:resolve=member`;
+
+  const res = await fetch(outfitEndpoint);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch outfit data");
+  }
+
+  const data = await res.json();
+  const outfit = data.outfit_list?.[0] || null;
+
+  if (!outfit) {
+    console.error("No outfit found for:", outfitName);
+    return null;
+  }
+
+  // Ensure members is always an array
+  outfit.members = Array.isArray(outfit.members) ? outfit.members : [];
+
+  // Extract member data with ranks
+  const membersWithRanks = outfit.members.map((member) => ({
+    character_id: member.character_id,
+    rank: member.rank,
+    rank_ordinal: member.rank_ordinal,
+  }));
+
+  // Fetch detailed member data
+  const memberIds = membersWithRanks.map((member) => member.character_id);
+  const detailedMembers = await fetchMemberDetails(memberIds);
+
+  // Fetch online statuses
+  const onlineStatuses = await fetchOnlineStatuses(memberIds);
+
+  // Merge detailed member data with ranks and online statuses
+  outfit.members = detailedMembers.map((member) => {
+    const memberRankInfo = membersWithRanks.find((m) => m.character_id === member.character_id);
+    return {
+      ...member,
+      rank: memberRankInfo?.rank || "Unknown",
+      rank_ordinal: parseInt(memberRankInfo?.rank_ordinal) || Number.MAX_SAFE_INTEGER,
+      isOnline: onlineStatuses[member.character_id] || false, // Add online status
+    };
+  });
+
+  // Determine the outfit faction by the most common faction ID, ignoring NS Operatives
+  const factionCounts = outfit.members.reduce((acc, member) => {
+    if (["1", "2", "3"].includes(member.faction_id)) {
+      acc[member.faction_id] = (acc[member.faction_id] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
+  outfit.faction_id = Object.entries(factionCounts).reduce((mostCommonFaction, [factionId, count]) => {
+    if (!mostCommonFaction || count > factionCounts[mostCommonFaction]) {
+      return factionId;
+    }
+    return mostCommonFaction;
+  }, null);
+
+  // Sort members by rank_ordinal (ascending order)
+  outfit.members.sort((a, b) => a.rank_ordinal - b.rank_ordinal);
+
+  return outfit;
+}
+
+
+async function fetchOnlineStatuses(characterIds) {
+  const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
+  const endpoint = `${baseUrl}/characters_online_status?character_id=${characterIds.join(",")}`;
+
+  const res = await fetch(endpoint);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch online statuses");
+  }
+
+  const data = await res.json();
+  const statusList = data.characters_online_status_list || [];
+  return statusList.reduce((acc, status) => {
+    acc[status.character_id] = status.online_status === "1"; // Map character_id to true/false for online status
+    return acc;
+  }, {});
+}
+
+async function fetchMemberDetails(memberIds) {
+  const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
+  const idsQuery = memberIds.join(",");
+  const endpoint = `${baseUrl}/character?character_id=${idsQuery}&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level`;
+
+  const res = await fetch(endpoint);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch member details");
+  }
+
+  const data = await res.json();
+  return data.character_list || [];
+}
+
+export default async function OutfitPage({ params }) {
+  const { outfitName } = params;
+
+  // Fetch outfit data
+  const outfitData = await fetchOutfitData(outfitName);
+
+  if (!outfitData) {
+    return (
+      <div className={styles.errorContainer}>
+        <h1>Outfit Not Found</h1>
+        <p>We couldn&apos;t find an outfit named &rdquo;{outfitName}&rdquo;.</p>
+      </div>
+    );
+  }
+
+  const { name, alias, members, faction_id } = outfitData;
+
+  return (
+    <div className={styles.container}>
+      <header className={styles.header}>
+        <h1>
+          {name} [{alias}]
+        </h1>
+        {faction_id && <FactionLogo factionId={faction_id} />}
+      </header>
+
+      <section className={styles.section}>
+        <h2>Members
+          {" "}
+          <span className={styles.membersCount}>
+            {members.length > 0 ? `(${members.length})` : "(0)"}
+          </span>
+        </h2>
+        {members.length > 0 ? (
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Name</th>
+                  <th>BR ~ Prestige</th>
+                </tr>
+              </thead>
+              <tbody>
+                {members.map((member) => (
+                  <tr key={member.character_id}>
+                    <td>{member?.rank || "Unknown"}</td>
+                    <td>
+                      <span
+                        className={`${styles.statusDot} ${member.isOnline ? styles.online : styles.offline}`}
+                        data-tooltip={member.isOnline ? "Online" : "Offline"}
+                      ></span>{" "}
+                      <FactionColoredCharacterName
+                        name={member?.name?.first || "Unknown"}
+                        factionId={member?.faction_id}
+                      />
+                    </td>
+                    <td>
+                      {member?.battle_rank?.value || "N/A"} ~{" "}
+                      {member?.prestige_level || 0}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p>No members found in this outfit.</p>
+        )}
+      </section>
+    </div>
+  );
+
+}
+
