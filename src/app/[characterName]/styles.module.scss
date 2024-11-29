@@ -88,14 +88,17 @@
   vertical-align: middle;
   position: relative;
   cursor: pointer;
+  border:1px solid;
 }
 
 .statusDot.online {
-  background-color: green;
+  background-color: #36e036;
+  border-color:#36e036;
 }
 
 .statusDot.offline {
-  background-color: red;
+  background-color: transparent;
+  border-color:rgb(132, 132, 132);
 }
 
 .statusDot::after {

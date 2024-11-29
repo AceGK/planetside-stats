@@ -38,6 +38,25 @@ async function getCharacterData(characterName) {
   return data.character_list?.[0] || null;
 }
 
+// online status for friends and killboard
+async function getOnlineStatus(characterIds) {
+  const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
+  const endpoint = `${baseUrl}/characters_online_status?character_id=${characterIds.join(",")}`;
+
+  const res = await fetch(endpoint);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch online statuses");
+  }
+
+  const data = await res.json();
+  const statusList = data.characters_online_status_list || [];
+  return statusList.reduce((acc, status) => {
+    acc[status.character_id] = status.online_status === "1"; // Map character_id to true/false for online status
+    return acc;
+  }, {});
+}
+
 async function getFriendDetails(friendIds) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
   const idsQuery = friendIds.join(",");
@@ -71,6 +90,7 @@ async function getCharacterFriends(characterId) {
   if (friendIds.length === 0) return [];
 
   const friendDetails = await getFriendDetails(friendIds);
+  const onlineStatuses = await getOnlineStatus(friendIds);
 
   return friendList.map((friend) => {
     const friendDetail = friendDetails.find((fd) => fd.character_id === friend.character_id);
@@ -80,6 +100,7 @@ async function getCharacterFriends(characterId) {
       faction_id: friendDetail?.faction_id || null,
       battle_rank: friendDetail?.battle_rank?.value || "N/A",
       prestige_level: friendDetail?.prestige_level || 0,
+      isOnline: onlineStatuses[friend.character_id] || false, // Use the online status map
     };
   }).sort((a, b) => a.name.localeCompare(b.name));
 }
@@ -101,7 +122,7 @@ async function getKillboardData(characterId) {
     return [];
   }
 
-  const namesEndpoint = `${baseUrl}/character?character_id=${characterIds.join(",")}&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level,online_status`;
+  const namesEndpoint = `${baseUrl}/character?character_id=${characterIds.join(",")}&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level`;
   const namesRes = await fetch(namesEndpoint);
 
   if (!namesRes.ok) {
@@ -110,6 +131,8 @@ async function getKillboardData(characterId) {
 
   const namesData = await namesRes.json();
   const namesList = namesData.character_list || [];
+
+  const onlineStatuses = await getOnlineStatus(characterIds);
 
   return killEvents
     .map((event) => {
@@ -121,7 +144,7 @@ async function getKillboardData(characterId) {
         kills: event.count,
         battleRank: matchedCharacter?.battle_rank?.value || "N/A",
         prestigeLevel: matchedCharacter?.prestige_level || 0,
-        isOnline: matchedCharacter?.online_status?.status === "online",
+        isOnline: onlineStatuses[event.character_id] || false, // Use the online status map
       };
     })
     .filter((entry) => entry.name !== "Name Unavailable" && entry.characterId !== characterId) // Remove unavailable names and current character
@@ -170,9 +193,9 @@ export default async function CharacterPage({ params: asyncParams }) {
   const friends = await getCharacterFriends(character_id);
 
   // Determine if the character is online
-  const isOnline = online_status?.online_status_list?.[0]?.status === "online";
+  const isOnline = characterData.online_status === "1";
 
-  
+  console.log(killboard)
 
   return (
     <div className={styles.container}>
@@ -181,7 +204,16 @@ export default async function CharacterPage({ params: asyncParams }) {
         <FactionLogo factionId={faction_id} />
         <p>Battle Rank: {battle_rank.value} (Prestige Level: {prestige_level})</p>
         <p>Server: {serverName}</p>
-        <p>Status: <span style={{ color: isOnline ? "green" : "red" }}>{isOnline ? "Online" : "Offline"}</span></p>
+        <p>
+          Status:{" "}
+          <span
+            className={`${styles.statusDot} ${isOnline ? styles.online : styles.offline}`}
+            data-tooltip={isOnline ? "Online" : "Offline"}
+          ></span>{" "}
+          <span className={styles.statusText}>
+            {isOnline ? "Online" : "Offline"}
+          </span>
+        </p>
       </header>
 
       <section className={styles.section}>
@@ -224,12 +256,12 @@ export default async function CharacterPage({ params: asyncParams }) {
 
       {/* Friends Section */}
       <section className={styles.section}>
-      <h2>
-    Friends{" "}
-    <span className={styles.friendsCount}>
-      {friends.length > 0 ? `(${friends.length})` : "(0)"}
-    </span>
-  </h2>
+        <h2>
+          Friends{" "}
+          <span className={styles.friendsCount}>
+            {friends.length > 0 ? `(${friends.length})` : "(0)"}
+          </span>
+        </h2>
         {friends.length > 0 ? (
           <div className={styles.tableContainer}>
             <table className={styles.table}>
