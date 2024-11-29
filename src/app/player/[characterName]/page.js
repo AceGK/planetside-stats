@@ -86,7 +86,7 @@ async function getFriendDetails(friendIds) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
   const idsQuery = friendIds.join(",");
 
-  const endpoint = `${baseUrl}/character?character_id=${idsQuery}&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level`;
+  const endpoint = `${baseUrl}/character?character_id=${idsQuery}&c:resolve=outfit&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level,outfit.alias,outfit.name`;
   const res = await fetch(endpoint);
 
   if (!res.ok) {
@@ -125,7 +125,8 @@ async function getCharacterFriends(characterId) {
       faction_id: friendDetail?.faction_id || null,
       battle_rank: friendDetail?.battle_rank?.value || "N/A",
       prestige_level: friendDetail?.prestige_level || 0,
-      isOnline: onlineStatuses[friend.character_id] || false, // Use the online status map
+      isOnline: onlineStatuses[friend.character_id] || false,
+      outfit: friendDetail?.outfit || "n/a",
     };
   }).sort((a, b) => a.name.localeCompare(b.name));
 }
@@ -176,6 +177,58 @@ async function getKillboardData(characterId) {
     .slice(0, 100); // Ensure only 100 entries
 }
 
+async function getDeathBoardData(characterId) {
+  const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
+
+  // Fetch grouped death events
+  const endpoint = `${baseUrl}/characters_event_grouped/?character_id=${characterId}&type=DEATH&c:groupBy=attacker_character_id&c:limit=100&c:sort=count:-1`;
+  const res = await fetch(endpoint);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch death board data");
+  }
+
+  const data = await res.json();
+  const deathEvents = data.characters_event_grouped_list || [];
+
+  // Extract attacker IDs
+  const attackerIds = deathEvents.map((event) => event.character_id);
+
+  if (attackerIds.length === 0) {
+    return [];
+  }
+
+  // Fetch attacker details
+  const attackerEndpoint = `${baseUrl}/character?character_id=${attackerIds.join(",")}&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level`;
+  const attackerRes = await fetch(attackerEndpoint);
+
+  if (!attackerRes.ok) {
+    throw new Error("Failed to fetch attacker details");
+  }
+
+  const attackerData = await attackerRes.json();
+  const attackers = attackerData.character_list || [];
+
+  // Combine death events with attacker details
+  return deathEvents.map((event) => {
+    const attacker = attackers.find(
+      (char) => char.character_id === event.character_id
+    );
+
+    return {
+      attackerId: event.character_id,
+      name: attacker?.name?.first || "Unknown",
+      factionId: attacker?.faction_id || null,
+      deaths: event.count, // Times this attacker killed the character
+      battleRank: attacker?.battle_rank?.value || "N/A",
+      prestigeLevel: attacker?.prestige_level || 0,
+    };
+  }).filter((entry) => entry.name !== "Unknown" && entry.attackerId !== characterId) // Exclude unavailable names and profile's character;
+}
+
+
+
+
 
 
 export default async function CharacterPage({ params: asyncParams }) {
@@ -210,17 +263,20 @@ export default async function CharacterPage({ params: asyncParams }) {
   // Fetch detailed killboard data
   const killboard = await getKillboardData(character_id);
 
+  // Fetch detailed deathboard data
+  const deathBoard = await getDeathBoardData(character_id);
+
   // Fetch character world data using character_id
   const worldId = await getCharacterWorldData(character_id);
   const serverName = worldNames[worldId] || "Unknown";
 
   // Fetch friends data
   const friends = await getCharacterFriends(character_id);
+  console.log(friends);
 
   // Determine if the character is online
   const isOnline = characterData.online_status === "1";
 
-  // console.log(killboard)
 
   return (
     <div className={styles.container}>
@@ -350,6 +406,7 @@ export default async function CharacterPage({ params: asyncParams }) {
                           name={friend.name}
                           factionId={friend.faction_id}
                         />
+                        {friend.outfit.alias && <span> [{friend.outfit.alias}]</span>}
                       </Link>
                     </td>
                     <td>
@@ -407,6 +464,50 @@ export default async function CharacterPage({ params: asyncParams }) {
           </div>
         ) : (
           <p>No kills recorded.</p>
+        )}
+      </section>
+
+      {/* Death Board Section */}
+      <section className={styles.section}>
+        <h2>Death Board</h2>
+        {deathBoard.length > 0 ? (
+          <div className={styles.tableContainer}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Deaths</th>
+                  <th>BR ~ Prestige</th>
+                </tr>
+              </thead>
+              <tbody>
+                {deathBoard.map((entry, index) => (
+                  <tr key={index}>
+                    <td>#{index + 1}</td>
+                    <td>
+                      <span
+                        className={`${styles.statusDot} ${entry.isOnline ? styles.online : styles.offline}`}
+                        data-tooltip={entry.isOnline ? "Online" : "Offline"}
+                      ></span>{" "}
+                      <Link
+                        href={`/player/${entry.name}`}
+                        style={{ textDecoration: "none" }}
+                      >
+                        <FactionColoredName name={entry.name} factionId={entry.factionId} />
+                      </Link>
+                    </td>
+                    <td>{entry.deaths}</td>
+                    <td>
+                      {entry.battleRank} ~ {entry.prestigeLevel}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p>No deaths recorded.</p>
         )}
       </section>
 
