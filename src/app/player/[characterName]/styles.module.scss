@@ -8,7 +8,6 @@
 }
 
 .header {
-  text-align: center;
   padding-bottom: 20px;
   border-bottom: 2px solid var(--clr-neutral-500);
 
@@ -84,7 +83,6 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  margin-left: 8px;
   vertical-align: middle;
   position: relative;
   cursor: pointer;
@@ -97,8 +95,8 @@
 }
 
 .statusDot.offline {
-  background-color: transparent;
-  border-color:rgb(132, 132, 132);
+  background-color: red;
+  border-color:red;
 }
 
 .statusDot::after {

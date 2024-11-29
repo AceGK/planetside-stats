@@ -1,7 +1,7 @@
 import React from "react";
 import factions from "@/utils/factions";
 
-const FactionLogo = ({ factionId }) => {
+export default function FactionLogo ({ factionId }) {
   const faction = factions[factionId];
 
   if (!faction) {
@@ -9,17 +9,15 @@ const FactionLogo = ({ factionId }) => {
   }
 
   return (
-    <div style={{ textAlign: "center" }}>
+    <div>
       <img
-        src={faction.image} // Path to the SVG file
-        alt={faction.name} // Accessible name for the image
+        src={faction.image} 
+        alt={faction.name}
         aria-label={faction.name}
         title={faction.name}
-        style={{ width: "100px", height: "100px" }} // Style the image
+        style={{ width: "100px", height: "100px" }}
       />
       <p>{faction.name}</p>
     </div>
   );
 };
-
-export default FactionLogo;

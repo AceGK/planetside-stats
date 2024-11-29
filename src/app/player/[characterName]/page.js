@@ -205,7 +205,6 @@ export default async function CharacterPage({ params: asyncParams }) {
         <p>Battle Rank: {battle_rank.value} ~ Prestige Level: {prestige_level}</p>
         <p>Server: {serverName}</p>
         <p>
-          Status:{" "}
           <span
             className={`${styles.statusDot} ${isOnline ? styles.online : styles.offline}`}
             data-tooltip={isOnline ? "Online" : "Offline"}
@@ -224,20 +223,19 @@ export default async function CharacterPage({ params: asyncParams }) {
       </section>
 
       {outfit && (
-  <section className={styles.section}>
-    <h2>Outfit</h2>
-    <p>
-      <strong>Outfit Name:</strong>{" "}
-      <Link href={`/outfit/${encodeURIComponent(outfit.name)}`}>
-        {outfit.name}
-      </Link>{" "}
-      [{outfit.alias}]
-    </p>
-    <p>
-      <strong>Members:</strong> {outfit.member_count}
-    </p>
-  </section>
-)}
+        <section className={styles.section}>
+          <h2>Outfit</h2>
+          <p>
+            <strong>Outfit Name:</strong>{" "}
+            <Link href={`/outfit/${encodeURIComponent(outfit.name)}`}>
+              {outfit.name} [{outfit.alias}]
+            </Link>
+          </p>
+          <p>
+            <strong>Members:</strong> {outfit.member_count}
+          </p>
+        </section>
+      )}
 
       <section className={styles.section}>
         <h2>Certifications</h2>
@@ -275,6 +273,7 @@ export default async function CharacterPage({ params: asyncParams }) {
             <table className={styles.table}>
               <thead>
                 <tr>
+                  <th>Status</th>
                   <th>Name</th>
                   <th>BR ~ Prestige</th>
                 </tr>
@@ -286,9 +285,17 @@ export default async function CharacterPage({ params: asyncParams }) {
                       <span
                         className={`${styles.statusDot} ${friend.online === "1" ? styles.online : styles.offline}`}
                         data-tooltip={friend.online === "1" ? "Online" : "Offline"}
-                      ></span>{" "}
-                      <Link href={`/player/${friend.name}`} style={{ textDecoration: "none" }}>
-                        <FactionColoredName name={friend.name} factionId={friend.faction_id} />
+                      ></span>
+                    </td>
+                    <td>
+                      <Link
+                        href={`/player/${friend.name}`}
+                        style={{ textDecoration: "none" }}
+                      >
+                        <FactionColoredName
+                          name={friend.name}
+                          factionId={friend.faction_id}
+                        />
                       </Link>
                     </td>
                     <td>
@@ -303,6 +310,8 @@ export default async function CharacterPage({ params: asyncParams }) {
           <p>This character has no friends listed.</p>
         )}
       </section>
+
+
 
       {/* Killboard Section */}
       <section className={styles.section}>
@@ -323,10 +332,12 @@ export default async function CharacterPage({ params: asyncParams }) {
                   <tr key={index}>
                     <td>#{index + 1}</td>
                     <td>
-                      <span
-                        className={`${styles.statusDot} ${entry.isOnline ? styles.online : styles.offline}`}
-                        data-tooltip={entry.isOnline ? "Online" : "Offline"}
-                      ></span>{" "}
+                      {entry.isOnline && (
+                        <span
+                          className={`${styles.statusDot} ${styles.online}`}
+                          data-tooltip="Online"
+                        ></span>
+                      )}{" "}
                       <Link href={`/player/${entry.name}`} style={{ textDecoration: "none" }}>
                         <FactionColoredName name={entry.name} factionId={entry.factionId} />
                       </Link>

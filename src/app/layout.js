@@ -1,7 +1,8 @@
 import localFont from "next/font/local";
+import "./styles/reset.scss";
 import "./styles/globals.scss";
-import PasswordProtect from "../components/PasswordProtect";
-import ThemeProvider from "../components/ThemeProvider"; // Import the new ThemeProvider
+import { ThemeProvider } from 'next-themes'
+import Nav from "@/components/Nav";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -21,12 +22,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        <ThemeProvider>
-          {/* <PasswordProtect> */}
+        <ThemeProvider defaultTheme="system">
+            <Nav />
             {children}
-            {/* </PasswordProtect> */}
         </ThemeProvider>
       </body>
     </html>
