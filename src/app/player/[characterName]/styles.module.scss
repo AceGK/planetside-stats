@@ -1,25 +1,71 @@
+@use "../../styles/mixins" as *;
+
 .container {
   max-width: 900px;
-  margin: 20px auto;
+  margin:auto;
   padding: 20px;
-  background: var(--clr-neutral-200);
-  box-shadow: var(--box-shadow-light);
   border-radius: 8px;
 }
 
 .header {
-  padding-bottom: 20px;
-  border-bottom: 2px solid var(--clr-neutral-500);
+  display: flex;
+  justify-content: space-between; /* Align content to edges */
+  align-items: center;
+  padding: 1rem;
+  gap: 1rem;
+  margin-bottom: 1rem;
 
-  h1 {
-    margin: 0;
-    font-size: 2rem;
-    color: var(--clr-neutral-900);
+  .headerContent {
+    display: flex;
+    flex-direction: column; /* Stack text items vertically */
+    gap: 0.5rem;
+    flex: 1; /* Take up remaining space */
   }
 
-  p {
-    margin: 5px 0;
-    color: var(--clr-neutral-700);
+  .factionLogo {
+    width: 150px;
+    height: 150px;
+    flex-shrink: 0;
+    @include mobile() {
+      display: none;
+    }
+  }
+
+  .characterDetails {
+    display: flex;
+    flex-direction: column;
+
+    .characterName {
+      margin: 0;
+      font-size: 2rem;
+      color: var(--clr-neutral-900);
+      font-weight: bold;
+    }
+
+    .characterRank,
+    .characterServer,
+    .characterStatus {
+      margin: 5px 0;
+      // color: var(--clr-neutral-700);
+      font-size: 1rem;
+    }
+
+    .characterRank {
+      font-weight: bold;
+    }
+
+    .statusDot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 5px;
+    }
+
+    .statusText {
+      display: inline;
+      font-size: 1rem;
+    }
   }
 }
 
@@ -86,17 +132,17 @@
   vertical-align: middle;
   position: relative;
   cursor: pointer;
-  border:1px solid;
+  border: 1px solid;
 }
 
 .statusDot.online {
   background-color: #36e036;
-  border-color:#36e036;
+  border-color: #36e036;
 }
 
 .statusDot.offline {
   background-color: red;
-  border-color:red;
+  border-color: red;
 }
 
 .statusDot::after {
@@ -121,10 +167,10 @@
 }
 
 .friendsCount {
-  font-size: 0.8em; 
-  vertical-align: middle; 
+  font-size: 0.8em;
+  vertical-align: middle;
   color: var(--clr-neutral-700);
-  font-weight:normal;
+  font-weight: normal;
 }
 
 .tableContainer {
@@ -151,10 +197,10 @@
 .table th {
   color: var(--clr-neutral-800);
   font-weight: bold;
-  position: sticky; 
-  top: 0; 
-  z-index: 2; 
-  background-color: var(--clr-neutral-300); 
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background-color: var(--clr-neutral-300);
 }
 
 .table td {

@@ -7,10 +7,10 @@ import { worldNames, getCharacterWorldData } from "@/utils/world";
 import TimePlayed from "@/components/TimePlayed";
 
 const factionColors = {
-  "3": "#d90005", // Terran Republic (Red)
-  "2": "#007dc3", // New Conglomerate (Blue)
-  "1": "#9139d0",    // Vanu Sovereignty (Purple)
-  "4": "#b7b7b7", // Nanite Systems Operatives (Gray/White)
+  "3": "#e61f23", // Terran Republic
+  "2": "#007dc3", // New Conglomerate
+  "1": "#9139d0", // Vanu Sovereignty
+  "4": "#b7b7b7", // Nanite Systems Operatives
 };
 
 function getFactionColor(factionId) {
@@ -23,10 +23,27 @@ const FactionColoredName = ({ name, factionId }) => (
   </span>
 );
 
+async function getTitleData(titleId) {
+  if (!titleId) return null;
+
+  const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
+  const endpoint = `${baseUrl}/title?title_id=${titleId}`;
+
+  const res = await fetch(endpoint);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch title data");
+  }
+
+  const data = await res.json();
+  const title = data.title_list?.[0]?.name?.en; // Use English title
+  return title || null;
+}
+
 // Main component
 async function getCharacterData(characterName) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
-  const endpoint = `${baseUrl}/character?name.first_lower=${characterName.toLowerCase()}&c:resolve=outfit,stat_history,online_status`;
+  const endpoint = `${baseUrl}/character?name.first_lower=${characterName.toLowerCase()}&c:resolve=outfit,stat_history,online_status,title_id`;
 
   const res = await fetch(endpoint);
 
@@ -35,8 +52,16 @@ async function getCharacterData(characterName) {
   }
 
   const data = await res.json();
-  return data.character_list?.[0] || null;
+  const character = data.character_list?.[0];
+
+  if (!character) return null;
+
+  // Fetch the title name
+  const titleName = await getTitleData(character.title_id);
+
+  return { ...character, titleName };
 }
+
 
 // online status for friends and killboard
 async function getOnlineStatus(characterIds) {
@@ -179,7 +204,7 @@ export default async function CharacterPage({ params: asyncParams }) {
     certs,
     outfit,
     stats,
-    online_status,
+    titleName,
   } = characterData;
 
   // Fetch detailed killboard data
@@ -199,20 +224,47 @@ export default async function CharacterPage({ params: asyncParams }) {
 
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <h1>{name.first}</h1>
-        <FactionLogo factionId={faction_id} />
-        <p>Battle Rank: {battle_rank.value} ~ Prestige Level: {prestige_level}</p>
-        <p>Server: {serverName}</p>
-        <p>
-          <span
-            className={`${styles.statusDot} ${isOnline ? styles.online : styles.offline}`}
-            data-tooltip={isOnline ? "Online" : "Offline"}
-          ></span>{" "}
-          <span className={styles.statusText}>
-            {isOnline ? "Online" : "Offline"}
-          </span>
-        </p>
+      <header
+        className={styles.header}
+        style={{
+          backgroundColor: `${getFactionColor(faction_id)}33`,
+        }}
+      >
+        <div className={styles.headerContent}>
+          <div className={styles.characterDetails}>
+            {titleName && (
+              <p className={styles.characterTitle}>{titleName}</p>
+            )}
+            <h1 className={styles.characterName}>
+              <FactionColoredName name={name.first} factionId={faction_id} />
+              {outfit && (
+                <>
+                  {" "}
+                  <Link href={`/outfit/${encodeURIComponent(outfit.name)}`}>
+                    [{outfit.alias}]
+                  </Link>
+                </>
+              )}
+            </h1>
+            <p className={styles.characterRank}>
+              Battle Rank: {battle_rank.value} ~ Prestige: {prestige_level}
+            </p>
+            <p className={styles.characterServer}>
+              Server: {serverName}
+            </p>
+            <p className={styles.characterStatus}>
+              <span
+                className={`${styles.statusDot} ${isOnline ? styles.online : styles.offline
+                  }`}
+                data-tooltip={isOnline ? "Online" : "Offline"}
+              ></span>{" "}
+              <span className={styles.statusText}>
+                {isOnline ? "Online" : "Offline"}
+              </span>
+            </p>
+          </div>
+        </div>
+        <FactionLogo factionId={faction_id} className={styles.factionLogo} />
       </header>
 
       <section className={styles.section}>
@@ -222,20 +274,22 @@ export default async function CharacterPage({ params: asyncParams }) {
         <TimePlayed minutesPlayed={times.minutes_played} />
       </section>
 
-      {outfit && (
-        <section className={styles.section}>
-          <h2>Outfit</h2>
-          <p>
-            <strong>Outfit Name:</strong>{" "}
-            <Link href={`/outfit/${encodeURIComponent(outfit.name)}`}>
-              {outfit.name} [{outfit.alias}]
-            </Link>
-          </p>
-          <p>
-            <strong>Members:</strong> {outfit.member_count}
-          </p>
-        </section>
-      )}
+      {/* {
+        outfit && (
+          <section className={styles.section}>
+            <h2>Outfit</h2>
+            <p>
+              <strong>Outfit Name:</strong>{" "}
+              <Link href={`/outfit/${encodeURIComponent(outfit.name)}`}>
+                {outfit.name} [{outfit.alias}]
+              </Link>
+            </p>
+            <p>
+              <strong>Members:</strong> {outfit.member_count}
+            </p>
+          </section>
+        )
+      } */}
 
       <section className={styles.section}>
         <h2>Certifications</h2>
@@ -357,6 +411,6 @@ export default async function CharacterPage({ params: asyncParams }) {
       </section>
 
 
-    </div>
+    </div >
   );
 }

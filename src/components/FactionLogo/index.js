@@ -1,7 +1,7 @@
 import React from "react";
 import factions from "@/utils/factions";
 
-export default function FactionLogo ({ factionId }) {
+export default function FactionLogo({ factionId, className }) {
   const faction = factions[factionId];
 
   if (!faction) {
@@ -9,15 +9,12 @@ export default function FactionLogo ({ factionId }) {
   }
 
   return (
-    <div>
-      <img
-        src={faction.image} 
-        alt={faction.name}
-        aria-label={faction.name}
-        title={faction.name}
-        style={{ width: "100px", height: "100px" }}
-      />
-      <p>{faction.name}</p>
-    </div>
+    <img
+      src={faction.image}
+      alt={faction.name}
+      aria-label={faction.name}
+      title={faction.name}
+      className={className}
+    />
   );
-};
+}

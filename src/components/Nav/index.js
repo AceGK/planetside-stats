@@ -10,7 +10,7 @@ import { FaMagnifyingGlass } from "react-icons/fa6";
 
 export default function NavBar() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchType, setSearchType] = useState('player'); // Default to 'player'
+  const [searchType, setSearchType] = useState('player');
   const router = useRouter();
 
   const handleSearch = (e) => {

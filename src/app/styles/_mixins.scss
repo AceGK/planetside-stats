@@ -1,0 +1,40 @@
+// Breakpoint Variables
+$breakpoint-mobile: 480px;  // Extra small devices
+$breakpoint-tablet: 768px;  // Small devices
+$breakpoint-desktop: 1024px; // Medium devices
+$breakpoint-large: 1200px;  // Large devices
+
+// Mixin for Mobile
+@mixin mobile() {
+  @media (max-width: #{$breakpoint-mobile}) {
+    @content;
+  }
+}
+
+// Mixin for Tablet
+@mixin tablet() {
+  @media (min-width: #{$breakpoint-mobile + 1}) and (max-width: #{$breakpoint-tablet}) {
+    @content;
+  }
+}
+
+// Mixin for Desktop
+@mixin desktop() {
+  @media (min-width: #{$breakpoint-tablet + 1}) and (max-width: #{$breakpoint-desktop}) {
+    @content;
+  }
+}
+
+// Mixin for Large Screens
+@mixin large() {
+  @media (min-width: #{$breakpoint-large}) {
+    @content;
+  }
+}
+
+// Mixin for Between Breakpoints
+@mixin between($min, $max) {
+  @media (min-width: #{$min}) and (max-width: #{$max}) {
+    @content;
+  }
+}
