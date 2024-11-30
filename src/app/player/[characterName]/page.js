@@ -7,24 +7,8 @@ import TimePlayed from "@/components/character/TimePlayed";
 import { getFactionColor, FactionColoredName } from "@/utils/factions";
 import Killboard from "@/components/character/Killboard";
 import Friends from "@/components/character/Friends";
+import { characterTitle } from "@/utils/characterTitle";
 
-
-async function getTitleData(titleId) {
-  if (!titleId) return null;
-
-  const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
-  const endpoint = `${baseUrl}/title?title_id=${titleId}`;
-
-  const res = await fetch(endpoint);
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch title data");
-  }
-
-  const data = await res.json();
-  const title = data.title_list?.[0]?.name?.en;
-  return title || null;
-}
 
 async function getCharacterData(characterName) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
@@ -44,7 +28,7 @@ async function getCharacterData(characterName) {
   if (!character) return null;
 
   // Fetch the title name
-  const titleName = await getTitleData(character.title_id);
+  const titleName = await characterTitle(character.title_id);
 
   return { ...character, titleName };
 }
