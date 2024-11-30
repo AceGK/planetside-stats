@@ -100,7 +100,7 @@ async function fetchDeathBoardData(character_id) {
         outfit: {
           alias: attacker?.outfit?.alias || null,
           name: attacker?.outfit?.name || null,
-        }, // Include both alias and name
+        },
         isOnline: onlineStatuses[event.character_id] || false,
       };
     })
@@ -154,7 +154,7 @@ export default async function Killboard({ character_id }) {
                         factionId={entry.factionId}
                       />
                     </Link>
-                    {entry.outfit && (
+                    {entry.outfit && entry.outfit.alias && (
                       <>
                         {" "}
                         <Link
@@ -207,7 +207,7 @@ export default async function Killboard({ character_id }) {
                         factionId={entry.factionId}
                       />
                     </Link>
-                    {entry.outfit && (
+                    {entry.outfit && entry.outfit.alias && (
                       <>
                         {" "}
                         <Link
