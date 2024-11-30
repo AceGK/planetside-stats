@@ -124,48 +124,6 @@
   }
 }
 
-.statusDot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  vertical-align: middle;
-  position: relative;
-  cursor: pointer;
-  border: 1px solid;
-}
-
-.statusDot.online {
-  background-color: #36e036;
-  border-color: #36e036;
-}
-
-.statusDot.offline {
-  background-color: red;
-  border-color: red;
-}
-
-.statusDot::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  top: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: black;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-}
-
-.statusDot:hover::after {
-  opacity: 1;
-}
-
 .friendsCount {
   font-size: 0.8em;
   vertical-align: middle;

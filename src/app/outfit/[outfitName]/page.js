@@ -2,26 +2,8 @@ import React from "react";
 import Link from "next/link"; // Import Link from Next.js
 import styles from "./styles.module.scss";
 import FactionLogo from "@/components/FactionLogo";
-
-const factionColors = {
-  "3": "#d90005", // Terran Republic (Red)
-  "2": "#007dc3", // New Conglomerate (Blue)
-  "1": "#9139d0", // Vanu Sovereignty (Purple)
-  "4": "#b7b7b7", // Nanite Systems Operatives (Gray/White)
-};
-
-function getFactionColor(factionId) {
-  return factionColors[factionId] || "var(--clr-default)";
-}
-
-const FactionColoredCharacterName = ({ name, factionId }) => (
-  <span
-    style={{ color: getFactionColor(factionId), fontWeight: "bold" }}
-    className={styles.factionName}
-  >
-    {name}
-  </span>
-);
+import getOnlineStatus from "@/utils/getOnlineStatus";
+import { FactionColoredName } from "@/utils/factions";
 
 async function fetchOutfitData(outfitName) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
@@ -52,7 +34,8 @@ async function fetchOutfitData(outfitName) {
   const memberIds = membersWithRanks.map((member) => member.character_id);
   const detailedMembers = await fetchMemberDetails(memberIds);
 
-  const onlineStatuses = await fetchOnlineStatuses(memberIds);
+  // Replace fetchOnlineStatuses with getOnlineStatus
+  const onlineStatuses = await getOnlineStatus(memberIds);
 
   outfit.members = detailedMembers.map((member) => {
     const memberRankInfo = membersWithRanks.find((m) => m.character_id === member.character_id);
@@ -83,23 +66,6 @@ async function fetchOutfitData(outfitName) {
   return outfit;
 }
 
-async function fetchOnlineStatuses(characterIds) {
-  const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
-  const endpoint = `${baseUrl}/characters_online_status?character_id=${characterIds.join(",")}`;
-
-  const res = await fetch(endpoint);
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch online statuses");
-  }
-
-  const data = await res.json();
-  const statusList = data.characters_online_status_list || [];
-  return statusList.reduce((acc, status) => {
-    acc[status.character_id] = status.online_status === "1";
-    return acc;
-  }, {});
-}
 
 async function fetchMemberDetails(memberIds) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
@@ -116,7 +82,9 @@ async function fetchMemberDetails(memberIds) {
   return data.character_list || [];
 }
 
-export default async function OutfitPage({ params }) {
+export default async function OutfitPage({ params: asyncParams }) {
+  // Await the params
+  const params = await asyncParams;
   const { outfitName } = params;
 
   const outfitData = await fetchOutfitData(outfitName);
@@ -138,12 +106,13 @@ export default async function OutfitPage({ params }) {
         <h1>
           {name} [{alias}]
         </h1>
-        {faction_id && <FactionLogo factionId={faction_id} />}
+
+        {faction_id && <FactionLogo factionId={faction_id} className={styles.factionLogo} />}
       </header>
 
       <section className={styles.section}>
-        <h2>Members
-          {" "}
+        <h2>
+          Members{" "}
           <span className={styles.membersCount}>
             {members.length > 0 ? `(${members.length})` : "(0)"}
           </span>
@@ -164,21 +133,18 @@ export default async function OutfitPage({ params }) {
                     <td>{member?.rank || "Unknown"}</td>
                     <td>
                       <span
-                        className={`${styles.statusDot} ${member.isOnline ? styles.online : styles.offline}`}
+                        className={`statusDot ${member.isOnline ? 'online' : 'offline'}`}
                         data-tooltip={member.isOnline ? "Online" : "Offline"}
                       ></span>{" "}
                       <Link href={`/player/${member?.name?.first}`} passHref>
-                        
-                          <FactionColoredCharacterName
-                            name={member?.name?.first || "Unknown"}
-                            factionId={member?.faction_id}
-                          />
-                   
+                        <FactionColoredName
+                          name={member?.name?.first || "Unknown"}
+                          factionId={member?.faction_id}
+                        />
                       </Link>
                     </td>
                     <td>
-                      {member?.battle_rank?.value || "N/A"} ~{" "}
-                      {member?.prestige_level || 0}
+                      {member?.battle_rank?.value || "N/A"} ~ {member?.prestige_level || 0}
                     </td>
                   </tr>
                 ))}
@@ -192,3 +158,4 @@ export default async function OutfitPage({ params }) {
     </div>
   );
 }
+

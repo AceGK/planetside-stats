@@ -1,3 +1,5 @@
+@use "../../styles/mixins" as *;
+
 .container {
   max-width: 900px;
   margin: 20px auto;
@@ -10,7 +12,9 @@
 .header {
   text-align: center;
   padding-bottom: 20px;
-  border-bottom: 2px solid var(--clr-neutral-500);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 
   h1 {
     margin: 0;
@@ -30,7 +34,7 @@
   h2 {
     font-size: 1.5rem;
     color: var(--clr-neutral-800);
-    background: var(--clr-neutral-400);
+    // background: var(--clr-neutral-400);
     padding: 10px;
     border-radius: 5px;
     border-bottom: none;
@@ -50,49 +54,13 @@
   color: var(--clr-neutral-700);
   font-weight:normal;
 }
-.statusDot {
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin-left: 8px;
-  vertical-align: middle;
-  position: relative;
-  cursor: pointer;
-  border: 1px solid;
-}
 
-.statusDot.online {
-  background-color: #36e036;
-  border-color: #36e036;
+.factionLogo {
+  width: 150px;
+  height: 150px;
+  flex-shrink: 0;
+  align-self: center;
 }
-
-.statusDot.offline {
-  background-color: transparent;
-  border-color: rgb(132, 132, 132);
-}
-
-.statusDot::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  top: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: black;
-  color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  white-space: nowrap;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s ease;
-}
-
-.statusDot:hover::after {
-  opacity: 1;
-}
-
 
 .tableContainer {
   overflow-y: auto;

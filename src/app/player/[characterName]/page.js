@@ -1,27 +1,12 @@
 import React from "react";
 import Link from "next/link";
 import styles from "./styles.module.scss";
-import faction from "@/utils/factions";
 import FactionLogo from "@/components/FactionLogo";
 import { worldNames, getCharacterWorldData } from "@/utils/world";
 import TimePlayed from "@/components/TimePlayed";
+import getOnlineStatus from "@/utils/getOnlineStatus";
+import { getFactionColor, FactionColoredName } from "@/utils/factions";
 
-const factionColors = {
-  "3": "#e61f23", // Terran Republic
-  "2": "#007dc3", // New Conglomerate
-  "1": "#9139d0", // Vanu Sovereignty
-  "4": "#b7b7b7", // Nanite Systems Operatives
-};
-
-function getFactionColor(factionId) {
-  return factionColors[factionId] || "var(--clr-default)";
-}
-
-const FactionColoredName = ({ name, factionId }) => (
-  <span style={{ color: getFactionColor(factionId), fontWeight: 'bold' }} className={styles.factionName}>
-    {name}
-  </span>
-);
 
 async function getTitleData(titleId) {
   if (!titleId) return null;
@@ -36,7 +21,7 @@ async function getTitleData(titleId) {
   }
 
   const data = await res.json();
-  const title = data.title_list?.[0]?.name?.en; // Use English title
+  const title = data.title_list?.[0]?.name?.en;
   return title || null;
 }
 
@@ -60,26 +45,6 @@ async function getCharacterData(characterName) {
   const titleName = await getTitleData(character.title_id);
 
   return { ...character, titleName };
-}
-
-
-// online status for friends and killboard
-async function getOnlineStatus(characterIds) {
-  const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
-  const endpoint = `${baseUrl}/characters_online_status?character_id=${characterIds.join(",")}`;
-
-  const res = await fetch(endpoint);
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch online statuses");
-  }
-
-  const data = await res.json();
-  const statusList = data.characters_online_status_list || [];
-  return statusList.reduce((acc, status) => {
-    acc[status.character_id] = status.online_status === "1"; // Map character_id to true/false for online status
-    return acc;
-  }, {});
 }
 
 async function getFriendDetails(friendIds) {
@@ -170,7 +135,7 @@ async function getKillboardData(characterId) {
         kills: event.count,
         battleRank: matchedCharacter?.battle_rank?.value || "N/A",
         prestigeLevel: matchedCharacter?.prestige_level || 0,
-        isOnline: onlineStatuses[event.character_id] || false, // Use the online status map
+        isOnline: onlineStatuses[event.character_id] || false,
       };
     })
     .filter((entry) => entry.name !== "Name Unavailable" && entry.characterId !== characterId) // Remove unavailable names and current character
@@ -209,6 +174,8 @@ async function getDeathBoardData(characterId) {
   const attackerData = await attackerRes.json();
   const attackers = attackerData.character_list || [];
 
+  const onlineStatuses = await getOnlineStatus(attackerIds);
+
   // Combine death events with attacker details
   return deathEvents.map((event) => {
     const attacker = attackers.find(
@@ -219,17 +186,13 @@ async function getDeathBoardData(characterId) {
       attackerId: event.character_id,
       name: attacker?.name?.first || "Unknown",
       factionId: attacker?.faction_id || null,
-      deaths: event.count, // Times this attacker killed the character
+      deaths: event.count,
       battleRank: attacker?.battle_rank?.value || "N/A",
       prestigeLevel: attacker?.prestige_level || 0,
+      isOnline: onlineStatuses[event.character_id] || false,
     };
-  }).filter((entry) => entry.name !== "Unknown" && entry.attackerId !== characterId) // Exclude unavailable names and profile's character;
+  }).filter((entry) => entry.name !== "Unknown" && entry.attackerId !== characterId)
 }
-
-
-
-
-
 
 export default async function CharacterPage({ params: asyncParams }) {
   const params = await asyncParams;
@@ -310,8 +273,7 @@ export default async function CharacterPage({ params: asyncParams }) {
             </p>
             <p className={styles.characterStatus}>
               <span
-                className={`${styles.statusDot} ${isOnline ? styles.online : styles.offline
-                  }`}
+                className={`statusDot ${isOnline ? 'online' : 'offline'}`}
                 data-tooltip={isOnline ? "Online" : "Offline"}
               ></span>{" "}
               <span className={styles.statusText}>
@@ -329,23 +291,6 @@ export default async function CharacterPage({ params: asyncParams }) {
         <p><strong>Last Login:</strong> {new Date(times.last_login * 1000).toLocaleString()}</p>
         <TimePlayed minutesPlayed={times.minutes_played} />
       </section>
-
-      {/* {
-        outfit && (
-          <section className={styles.section}>
-            <h2>Outfit</h2>
-            <p>
-              <strong>Outfit Name:</strong>{" "}
-              <Link href={`/outfit/${encodeURIComponent(outfit.name)}`}>
-                {outfit.name} [{outfit.alias}]
-              </Link>
-            </p>
-            <p>
-              <strong>Members:</strong> {outfit.member_count}
-            </p>
-          </section>
-        )
-      } */}
 
       <section className={styles.section}>
         <h2>Certifications</h2>
@@ -374,13 +319,13 @@ export default async function CharacterPage({ params: asyncParams }) {
       <section className={styles.section}>
         <h2>
           Friends{" "}
-          <span className={styles.friendsCount}>
+          <span className="friendsCount">
             {friends.length > 0 ? `(${friends.length})` : "(0)"}
           </span>
         </h2>
         {friends.length > 0 ? (
-          <div className={styles.tableContainer}>
-            <table className={styles.table}>
+          <div className="tableContainer">
+            <table className="table">
               <thead>
                 <tr>
                   <th>Status</th>
@@ -393,7 +338,8 @@ export default async function CharacterPage({ params: asyncParams }) {
                   <tr key={index}>
                     <td>
                       <span
-                        className={`${styles.statusDot} ${friend.online === "1" ? styles.online : styles.offline}`}
+                        className={`statusDot ${friend.online === "1" ? "online" : "offline"
+                          }`}
                         data-tooltip={friend.online === "1" ? "Online" : "Offline"}
                       ></span>
                     </td>
@@ -427,9 +373,11 @@ export default async function CharacterPage({ params: asyncParams }) {
       {/* Killboard Section */}
       <section className={styles.section}>
         <h2>Killboard</h2>
+
+        <h3>Top Kills</h3>
         {killboard.length > 0 ? (
-          <div className={styles.tableContainer}>
-            <table className={styles.table}>
+          <div className="tableContainer">
+            <table className="table">
               <thead>
                 <tr>
                   <th>#</th>
@@ -445,12 +393,18 @@ export default async function CharacterPage({ params: asyncParams }) {
                     <td>
                       {entry.isOnline && (
                         <span
-                          className={`${styles.statusDot} ${styles.online}`}
+                          className={`statusDot online`}
                           data-tooltip="Online"
                         ></span>
                       )}{" "}
-                      <Link href={`/player/${entry.name}`} style={{ textDecoration: "none" }}>
-                        <FactionColoredName name={entry.name} factionId={entry.factionId} />
+                      <Link
+                        href={`/player/${entry.name}`}
+                        style={{ textDecoration: "none" }}
+                      >
+                        <FactionColoredName
+                          name={entry.name}
+                          factionId={entry.factionId}
+                        />
                       </Link>
                     </td>
                     <td>{entry.kills}</td>
@@ -465,14 +419,11 @@ export default async function CharacterPage({ params: asyncParams }) {
         ) : (
           <p>No kills recorded.</p>
         )}
-      </section>
 
-      {/* Death Board Section */}
-      <section className={styles.section}>
-        <h2>Death Board</h2>
+        <h3>Top Deaths</h3>
         {deathBoard.length > 0 ? (
-          <div className={styles.tableContainer}>
-            <table className={styles.table}>
+          <div className="tableContainer">
+            <table className="table">
               <thead>
                 <tr>
                   <th>#</th>
@@ -486,15 +437,20 @@ export default async function CharacterPage({ params: asyncParams }) {
                   <tr key={index}>
                     <td>#{index + 1}</td>
                     <td>
-                      <span
-                        className={`${styles.statusDot} ${entry.isOnline ? styles.online : styles.offline}`}
-                        data-tooltip={entry.isOnline ? "Online" : "Offline"}
-                      ></span>{" "}
+                      {entry.isOnline && (
+                        <span
+                          className={`statusDot online`}
+                          data-tooltip="Online"
+                        ></span>
+                      )}{" "}
                       <Link
                         href={`/player/${entry.name}`}
                         style={{ textDecoration: "none" }}
                       >
-                        <FactionColoredName name={entry.name} factionId={entry.factionId} />
+                        <FactionColoredName
+                          name={entry.name}
+                          factionId={entry.factionId}
+                        />
                       </Link>
                     </td>
                     <td>{entry.deaths}</td>
