@@ -118,8 +118,8 @@ export default async function OutfitPage({ params: asyncParams }) {
           </span>
         </h2>
         {members.length > 0 ? (
-          <div className={styles.tableContainer}>
-            <table className={styles.table}>
+          <div className="tableContainer outfit-table">
+            <table className="table">
               <thead>
                 <tr>
                   <th>Rank</th>

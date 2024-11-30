@@ -71,11 +71,12 @@
 
 .section {
   margin-bottom: 20px;
+  // background:red;
 
   h2 {
     font-size: 1.5rem;
     color: var(--clr-neutral-800);
-    background: var(--clr-neutral-400);
+    background: var(--clr-neutral-300);
     padding: 10px;
     border-radius: 5px;
     border-bottom: none;
@@ -96,7 +97,7 @@
 
 .stat {
   flex: 1 1 48%;
-  background: var(--clr-neutral-300);
+  background: var(--clr-neutral-200);
   padding: 10px;
   border: 1px solid var(--clr-neutral-500);
   border-radius: 5px;

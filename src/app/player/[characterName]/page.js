@@ -3,9 +3,10 @@ import Link from "next/link";
 import styles from "./styles.module.scss";
 import FactionLogo from "@/components/FactionLogo";
 import { worldNames, getCharacterWorldData } from "@/utils/world";
-import TimePlayed from "@/components/TimePlayed";
+import TimePlayed from "@/components/character/TimePlayed";
 import getOnlineStatus from "@/utils/getOnlineStatus";
 import { getFactionColor, FactionColoredName } from "@/utils/factions";
+import Killboard from "@/components/character/Killboard";
 
 
 async function getTitleData(titleId) {
@@ -96,104 +97,6 @@ async function getCharacterFriends(characterId) {
   }).sort((a, b) => a.name.localeCompare(b.name));
 }
 
-async function getKillboardData(characterId) {
-  const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
-  const killboardEndpoint = `${baseUrl}/characters_event_grouped/?character_id=${characterId}&type=KILL&c:limit=200&c:sort=count:-1`;
-
-  const res = await fetch(killboardEndpoint);
-  if (!res.ok) {
-    throw new Error("Failed to fetch killboard data");
-  }
-
-  const data = await res.json();
-  const killEvents = data.characters_event_grouped_list || [];
-
-  const characterIds = killEvents.map((event) => event.character_id);
-  if (characterIds.length === 0) {
-    return [];
-  }
-
-  const namesEndpoint = `${baseUrl}/character?character_id=${characterIds.join(",")}&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level`;
-  const namesRes = await fetch(namesEndpoint);
-
-  if (!namesRes.ok) {
-    throw new Error("Failed to fetch character data for names");
-  }
-
-  const namesData = await namesRes.json();
-  const namesList = namesData.character_list || [];
-
-  const onlineStatuses = await getOnlineStatus(characterIds);
-
-  return killEvents
-    .map((event) => {
-      const matchedCharacter = namesList.find((character) => character.character_id === event.character_id);
-      return {
-        characterId: event.character_id,
-        name: matchedCharacter?.name?.first || "Name Unavailable",
-        factionId: matchedCharacter?.faction_id || null,
-        kills: event.count,
-        battleRank: matchedCharacter?.battle_rank?.value || "N/A",
-        prestigeLevel: matchedCharacter?.prestige_level || 0,
-        isOnline: onlineStatuses[event.character_id] || false,
-      };
-    })
-    .filter((entry) => entry.name !== "Name Unavailable" && entry.characterId !== characterId) // Remove unavailable names and current character
-    .slice(0, 100); // Ensure only 100 entries
-}
-
-async function getDeathBoardData(characterId) {
-  const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
-
-  // Fetch grouped death events
-  const endpoint = `${baseUrl}/characters_event_grouped/?character_id=${characterId}&type=DEATH&c:groupBy=attacker_character_id&c:limit=100&c:sort=count:-1`;
-  const res = await fetch(endpoint);
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch death board data");
-  }
-
-  const data = await res.json();
-  const deathEvents = data.characters_event_grouped_list || [];
-
-  // Extract attacker IDs
-  const attackerIds = deathEvents.map((event) => event.character_id);
-
-  if (attackerIds.length === 0) {
-    return [];
-  }
-
-  // Fetch attacker details
-  const attackerEndpoint = `${baseUrl}/character?character_id=${attackerIds.join(",")}&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level`;
-  const attackerRes = await fetch(attackerEndpoint);
-
-  if (!attackerRes.ok) {
-    throw new Error("Failed to fetch attacker details");
-  }
-
-  const attackerData = await attackerRes.json();
-  const attackers = attackerData.character_list || [];
-
-  const onlineStatuses = await getOnlineStatus(attackerIds);
-
-  // Combine death events with attacker details
-  return deathEvents.map((event) => {
-    const attacker = attackers.find(
-      (char) => char.character_id === event.character_id
-    );
-
-    return {
-      attackerId: event.character_id,
-      name: attacker?.name?.first || "Unknown",
-      factionId: attacker?.faction_id || null,
-      deaths: event.count,
-      battleRank: attacker?.battle_rank?.value || "N/A",
-      prestigeLevel: attacker?.prestige_level || 0,
-      isOnline: onlineStatuses[event.character_id] || false,
-    };
-  }).filter((entry) => entry.name !== "Unknown" && entry.attackerId !== characterId)
-}
-
 export default async function CharacterPage({ params: asyncParams }) {
   const params = await asyncParams;
   const { characterName } = params;
@@ -222,12 +125,6 @@ export default async function CharacterPage({ params: asyncParams }) {
     stats,
     titleName,
   } = characterData;
-
-  // Fetch detailed killboard data
-  const killboard = await getKillboardData(character_id);
-
-  // Fetch detailed deathboard data
-  const deathBoard = await getDeathBoardData(character_id);
 
   // Fetch character world data using character_id
   const worldId = await getCharacterWorldData(character_id);
@@ -368,105 +265,11 @@ export default async function CharacterPage({ params: asyncParams }) {
         )}
       </section>
 
-
-
       {/* Killboard Section */}
       <section className={styles.section}>
-        <h2>Killboard</h2>
-
-        <h3>Top Kills</h3>
-        {killboard.length > 0 ? (
-          <div className="tableContainer">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Name</th>
-                  <th>Kills</th>
-                  <th>BR ~ Prestige</th>
-                </tr>
-              </thead>
-              <tbody>
-                {killboard.map((entry, index) => (
-                  <tr key={index}>
-                    <td>#{index + 1}</td>
-                    <td>
-                      {entry.isOnline && (
-                        <span
-                          className={`statusDot online`}
-                          data-tooltip="Online"
-                        ></span>
-                      )}{" "}
-                      <Link
-                        href={`/player/${entry.name}`}
-                        style={{ textDecoration: "none" }}
-                      >
-                        <FactionColoredName
-                          name={entry.name}
-                          factionId={entry.factionId}
-                        />
-                      </Link>
-                    </td>
-                    <td>{entry.kills}</td>
-                    <td>
-                      {entry.battleRank} ~ {entry.prestigeLevel}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p>No kills recorded.</p>
-        )}
-
-        <h3>Top Deaths</h3>
-        {deathBoard.length > 0 ? (
-          <div className="tableContainer">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Name</th>
-                  <th>Deaths</th>
-                  <th>BR ~ Prestige</th>
-                </tr>
-              </thead>
-              <tbody>
-                {deathBoard.map((entry, index) => (
-                  <tr key={index}>
-                    <td>#{index + 1}</td>
-                    <td>
-                      {entry.isOnline && (
-                        <span
-                          className={`statusDot online`}
-                          data-tooltip="Online"
-                        ></span>
-                      )}{" "}
-                      <Link
-                        href={`/player/${entry.name}`}
-                        style={{ textDecoration: "none" }}
-                      >
-                        <FactionColoredName
-                          name={entry.name}
-                          factionId={entry.factionId}
-                        />
-                      </Link>
-                    </td>
-                    <td>{entry.deaths}</td>
-                    <td>
-                      {entry.battleRank} ~ {entry.prestigeLevel}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p>No deaths recorded.</p>
-        )}
+      <h2>Killboard</h2>
+      <Killboard character_id={character_id} />
       </section>
-
 
     </div >
   );
