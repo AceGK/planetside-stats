@@ -1,10 +1,17 @@
 import React from "react";
 import Link from "next/link";
-import { getCharacterFriends } from "@/utils/characterFriends";
 import { FactionColoredName } from "@/utils/factions";
 
 const Friends = async ({ characterId }) => {
-  const friends = await getCharacterFriends(characterId);
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_BASE_URL}/api/character/friends/${characterId}`
+  );
+
+  if (!response.ok) {
+    return <p>Failed to fetch friends data. Please try again later.</p>;
+  }
+
+  const friends = await response.json();
 
   if (friends.length === 0) {
     return <p>This character has no friends.</p>;
@@ -32,8 +39,9 @@ const Friends = async ({ characterId }) => {
               <tr key={index}>
                 <td>
                   <span
-                    className={`statusDot ${friend.online === "1" ? "online" : "offline"
-                      }`}
+                    className={`statusDot ${
+                      friend.online === "1" ? "online" : "offline"
+                    }`}
                     data-tooltip={friend.online === "1" ? "Online" : "Offline"}
                   ></span>
                 </td>

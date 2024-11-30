@@ -13,21 +13,19 @@ import { characterTitle } from "@/utils/characterTitle";
 async function getCharacterData(characterName) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
 
-  // Use `name.first_lower` with lowercase conversion
   const endpoint = `${baseUrl}/character?name.first_lower=${characterName.toLowerCase()}&c:resolve=outfit,stat_history,online_status,title_id`;
 
-  const res = await fetch(endpoint);
+  const characterPromise = fetch(endpoint).then((res) => {
+    if (!res.ok) throw new Error("Failed to fetch character data");
+    return res.json();
+  });
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch character data");
-  }
-
-  const data = await res.json();
-  const character = data.character_list?.[0];
+  // Concurrently fetch other data (e.g., world or title)
+  const [characterResponse] = await Promise.all([characterPromise]);
+  const character = characterResponse.character_list?.[0];
 
   if (!character) return null;
 
-  // Fetch the title name
   const titleName = await characterTitle(character.title_id);
 
   return { ...character, titleName };
@@ -36,7 +34,6 @@ async function getCharacterData(characterName) {
 export default async function CharacterPage({ params: asyncParams }) {
   const params = await asyncParams;
   const { characterName } = params;
-
   // Sanitize and convert characterName to lowercase
   const sanitizedCharacterName = characterName.trim().toLowerCase();
 
@@ -64,7 +61,7 @@ export default async function CharacterPage({ params: asyncParams }) {
     stats,
     titleName,
   } = characterData;
-
+console.log(character_id)
   // Fetch character world data using character_id
   const worldId = await getCharacterWorldData(character_id);
   const serverName = worldNames[worldId] || "Unknown";
@@ -79,6 +76,8 @@ export default async function CharacterPage({ params: asyncParams }) {
 
   return (
     <div className={styles.container}>
+
+      {/* Character Header */}
       <header
         className={styles.header}
         style={{
@@ -119,6 +118,7 @@ export default async function CharacterPage({ params: asyncParams }) {
         <FactionLogo factionId={faction_id} className={styles.factionLogo} />
       </header>
 
+      {/* General Information */}
       <section className={styles.section}>
         <h2>General Information</h2>
         <p><strong>Creation Date:</strong> {new Date(times.creation * 1000).toLocaleDateString()}</p>
@@ -126,6 +126,7 @@ export default async function CharacterPage({ params: asyncParams }) {
         <TimePlayed minutesPlayed={times.minutes_played} />
       </section>
 
+      {/* Battle Rank */}
       <section className={styles.section}>
         <h2>Battle Rank</h2>
         <p className={styles.characterRank}>
@@ -147,6 +148,7 @@ export default async function CharacterPage({ params: asyncParams }) {
         </p>
       </section>
 
+      {/* Certifications */}
       <section className={styles.section}>
         <h2>Certifications</h2>
         <div className={styles.statsGrid}>
@@ -159,6 +161,7 @@ export default async function CharacterPage({ params: asyncParams }) {
         </div>
       </section>
 
+      {/* Key Stats */}
       <section className={styles.section}>
         <h2>Key Stats</h2>
         <div className={styles.statsGrid}>
@@ -170,12 +173,12 @@ export default async function CharacterPage({ params: asyncParams }) {
         </div>
       </section>
 
-      {/* Friends Section */}
+      {/* Friends */}
       <section className={styles.section}>
-  <Friends characterId={character_id} />
-</section>
+        <Friends characterId={character_id} />
+      </section>
 
-      {/* Killboard Section */}
+      {/* Killboard */}
       <section className={styles.section}>
         <h2>Killboard</h2>
         <Killboard character_id={character_id} />
