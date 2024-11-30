@@ -154,11 +154,11 @@ export default async function Killboard({ character_id }) {
                         factionId={entry.factionId}
                       />
                     </Link>
-                    {entry.outfit.alias && entry.outfit.name && (
+                    {entry.outfit && (
                       <>
                         {" "}
                         <Link
-                          href={`/outfit/${encodeURIComponent(entry.outfit.name)}`}
+                          href={`/outfit/${entry.outfit.name}`}
                         >
                           [{entry.outfit.alias}]
                         </Link>
@@ -207,11 +207,11 @@ export default async function Killboard({ character_id }) {
                         factionId={entry.factionId}
                       />
                     </Link>
-                    {entry.outfit.alias && entry.outfit.name && (
+                    {entry.outfit && (
                       <>
                         {" "}
                         <Link
-                          href={`/outfit/${encodeURIComponent(entry.outfit.name)}`}
+                          href={`/outfit/${entry.outfit.name}`}
                         >
                           [{entry.outfit.alias}]
                         </Link>

@@ -7,6 +7,8 @@ import { FactionColoredName } from "@/utils/factions";
 
 async function fetchOutfitData(outfitName) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
+  
+  // Ensure outfitName is lowercase
   const outfitEndpoint = `${baseUrl}/outfit?name_lower=${outfitName.toLowerCase()}&c:resolve=member`;
 
   const res = await fetch(outfitEndpoint);
@@ -23,6 +25,7 @@ async function fetchOutfitData(outfitName) {
     return null;
   }
 
+  // Process outfit members and other details
   outfit.members = Array.isArray(outfit.members) ? outfit.members : [];
 
   const membersWithRanks = outfit.members.map((member) => ({
@@ -34,7 +37,6 @@ async function fetchOutfitData(outfitName) {
   const memberIds = membersWithRanks.map((member) => member.character_id);
   const detailedMembers = await fetchMemberDetails(memberIds);
 
-  // Replace fetchOnlineStatuses with getOnlineStatus
   const onlineStatuses = await getOnlineStatus(memberIds);
 
   outfit.members = detailedMembers.map((member) => {
@@ -83,9 +85,10 @@ async function fetchMemberDetails(memberIds) {
 }
 
 export default async function OutfitPage({ params: asyncParams }) {
-  // Await the params
   const params = await asyncParams;
-  const { outfitName } = params;
+  
+  // Convert hyphens back to spaces and ensure lowercase
+  const outfitName = params.outfitName.replace(/-/g, " ").toLowerCase();
 
   const outfitData = await fetchOutfitData(outfitName);
 
@@ -133,7 +136,7 @@ export default async function OutfitPage({ params: asyncParams }) {
                     <td>{member?.rank || "Unknown"}</td>
                     <td>
                       <span
-                        className={`statusDot ${member.isOnline ? 'online' : 'offline'}`}
+                        className={`statusDot ${member.isOnline ? "online" : "offline"}`}
                         data-tooltip={member.isOnline ? "Online" : "Offline"}
                       ></span>{" "}
                       <Link href={`/player/${member?.name?.first}`} passHref>
@@ -158,4 +161,5 @@ export default async function OutfitPage({ params: asyncParams }) {
     </div>
   );
 }
+
 
