@@ -26,7 +26,7 @@ async function getTitleData(titleId) {
   return title || null;
 }
 
-// Main component
+
 async function getCharacterData(characterName) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
   const endpoint = `${baseUrl}/character?name.first_lower=${characterName.toLowerCase()}&c:resolve=outfit,stat_history,online_status,title_id`;
@@ -137,6 +137,10 @@ export default async function CharacterPage({ params: asyncParams }) {
   // Determine if the character is online
   const isOnline = characterData.online_status === "1";
 
+  // experience level
+  const maxLevel = prestige_level < 1 ? 120 : 100;
+  const currentLevel = parseInt(battle_rank.value, 10);
+  const nextLevel = currentLevel + 1;
 
   return (
     <div className={styles.container}>
@@ -165,6 +169,7 @@ export default async function CharacterPage({ params: asyncParams }) {
             <p className={styles.characterRank}>
               Battle Rank: {battle_rank.value} ~ Prestige: {prestige_level}
             </p>
+
             <p className={styles.characterServer}>
               Server: {serverName}
             </p>
@@ -187,6 +192,27 @@ export default async function CharacterPage({ params: asyncParams }) {
         <p><strong>Creation Date:</strong> {new Date(times.creation * 1000).toLocaleDateString()}</p>
         <p><strong>Last Login:</strong> {new Date(times.last_login * 1000).toLocaleString()}</p>
         <TimePlayed minutesPlayed={times.minutes_played} />
+      </section>
+
+      <section className={styles.section}>
+        <h2>Battle Rank</h2>
+        <p className={styles.characterRank}>
+          Battle Rank: {currentLevel} ~ {prestige_level > 0 && `Prestige ${prestige_level}`}
+        </p>
+        <div className={styles.progressBarContainer}>
+          <div
+            className={styles.progressBar}
+            style={{ width: `${battle_rank.percent_to_next}%` }}
+          ></div>
+        </div>
+        <p className={styles.progressText}>
+          Progress: {battle_rank.percent_to_next}%
+          {currentLevel < maxLevel && (
+            <span className={styles.nextLevel}>
+              &nbsp;→ Next Level: {nextLevel}
+            </span>
+          )}
+        </p>
       </section>
 
       <section className={styles.section}>
@@ -267,8 +293,8 @@ export default async function CharacterPage({ params: asyncParams }) {
 
       {/* Killboard Section */}
       <section className={styles.section}>
-      <h2>Killboard</h2>
-      <Killboard character_id={character_id} />
+        <h2>Killboard</h2>
+        <Killboard character_id={character_id} />
       </section>
 
     </div >

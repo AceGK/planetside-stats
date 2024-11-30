@@ -132,44 +132,29 @@
   font-weight: normal;
 }
 
-.tableContainer {
-  max-height: 400px;
-  overflow-y: auto;
-  border: 1px solid var(--clr-neutral-500);
-  background-color: var(--clr-neutral-200);
-  border-radius: 8px;
+
+.progressBarContainer {
+  width: 100%; 
+  background-color: #1d1d1d; 
+  border-radius: 10px;
+  height: 10px;
+  margin-top: 10px;
+  overflow: hidden;
+  position: relative;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
+.progressBar {
+  height: 100%;
+  background-color: #4caf50; 
+  transition: width 0.3s ease-in-out;
+}
+
+.progressText {
+  margin-top: 5px;
   font-size: 0.9rem;
+  color: #666;
 }
 
-.table th,
-.table td {
-  padding: 8px 12px;
-  border-bottom: 1px solid var(--clr-neutral-400);
-}
-
-.table th {
-  color: var(--clr-neutral-800);
-  font-weight: bold;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background-color: var(--clr-neutral-300);
-}
-
-.table td {
-  color: var(--clr-neutral-700);
-}
-
-.table tr:last-child td {
-  border-bottom: none;
-}
-
-.table tr:hover {
-  background-color: var(--clr-neutral-300);
+.nextLevel {
+  color: #888;
 }
