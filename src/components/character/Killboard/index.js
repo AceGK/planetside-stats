@@ -8,7 +8,7 @@ const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/ge
 
 // Function to fetch killboard data
 async function fetchKillboardData(character_id) {
-  const killboardEndpoint = `${baseUrl}/characters_event_grouped/?character_id=${character_id}&type=KILL&c:limit=200&c:sort=count:-1`;
+  const killboardEndpoint = `${baseUrl}/characters_event_grouped/?character_id=${character_id}&type=KILL&c:limit=110&c:sort=count:-1`;
   const killboardRes = await fetch(killboardEndpoint, { cache: "no-store" });
 
   if (!killboardRes.ok) throw new Error("Failed to fetch killboard data");
@@ -47,14 +47,14 @@ async function fetchKillboardData(character_id) {
     })
     .filter(
       (entry) =>
-        entry.name !== "Name Unavailable" && entry.characterId !== character_id
+        entry.characterId !== character_id
     )
     .slice(0, 100);
 }
 
 // Function to fetch deathboard data
 async function fetchDeathBoardData(character_id) {
-  const deathboardEndpoint = `${baseUrl}/characters_event_grouped/?character_id=${character_id}&type=DEATH&c:groupBy=attacker_character_id&c:limit=100&c:sort=count:-1`;
+  const deathboardEndpoint = `${baseUrl}/characters_event_grouped/?character_id=${character_id}&type=DEATH&c:groupBy=attacker_character_id&c:limit=110&c:sort=count:-1`;
   const deathboardRes = await fetch(deathboardEndpoint, { cache: "no-store" });
 
   if (!deathboardRes.ok) throw new Error("Failed to fetch death board data");
@@ -90,7 +90,11 @@ async function fetchDeathBoardData(character_id) {
       prestigeLevel: attacker?.prestige_level || 0,
       isOnline: onlineStatuses[event.character_id] || false,
     };
-  });
+  }).filter(
+    (entry) =>
+      entry.attackerId !== character_id
+  )
+  .slice(0, 100);
 }
 
 export default async function Killboard({ character_id }) {
