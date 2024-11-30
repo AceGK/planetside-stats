@@ -1,3 +1,5 @@
+//api/character/friends/[characterId]/route.js
+
 import { NextResponse } from "next/server";
 
 const SERVICE_ID = process.env.SERVICE_ID;

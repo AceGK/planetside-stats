@@ -1,3 +1,4 @@
+//api/character/route.js
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
@@ -9,13 +10,9 @@ export async function GET(req) {
   }
 
   try {
-    // Base URL for Planetside 2 API
-    const baseUrl = "https://census.daybreakgames.com/s:example/get/ps2:v2";
+    const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
+    const endpoint = `${baseUrl}/character?name.first_lower=${characterName.toLowerCase()}&c:resolve=outfit,stat_history,online_status,title_id`;
 
-    // Endpoint for character data
-    const endpoint = `${baseUrl}/character?name.first_lower=${characterName.toLowerCase()}&c:resolve=outfit,stat_history`;
-
-    // Fetch data from Planetside 2 API
     const response = await fetch(endpoint);
 
     if (!response.ok) {
@@ -24,8 +21,7 @@ export async function GET(req) {
 
     const data = await response.json();
 
-    // Return the character data
-    if (data.character_list && data.character_list.length > 0) {
+    if (data.character_list?.length > 0) {
       return NextResponse.json(data.character_list[0]);
     } else {
       return NextResponse.json({ error: "Character not found" }, { status: 404 });

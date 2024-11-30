@@ -2,13 +2,11 @@ import React from "react";
 import Link from "next/link";
 import styles from "./styles.module.scss";
 import FactionLogo from "@/components/FactionLogo";
-import { worldNames, getCharacterWorldData } from "@/utils/world";
 import TimePlayed from "@/components/character/TimePlayed";
 import { getFactionColor, FactionColoredName } from "@/utils/factions";
 import Killboard from "@/components/character/Killboard";
 import Friends from "@/components/character/Friends";
 import { characterTitle } from "@/utils/characterTitle";
-
 
 async function getCharacterData(characterName) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
@@ -20,7 +18,6 @@ async function getCharacterData(characterName) {
     return res.json();
   });
 
-  // Concurrently fetch other data (e.g., world or title)
   const [characterResponse] = await Promise.all([characterPromise]);
   const character = characterResponse.character_list?.[0];
 
@@ -31,10 +28,17 @@ async function getCharacterData(characterName) {
   return { ...character, titleName };
 }
 
+async function getCharacterWorld(characterId) {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/character/world/${characterId}`);
+  if (!res.ok) {
+    throw new Error("Failed to fetch character world data");
+  }
+  return res.json();
+}
+
 export default async function CharacterPage({ params: asyncParams }) {
   const params = await asyncParams;
   const { characterName } = params;
-  // Sanitize and convert characterName to lowercase
   const sanitizedCharacterName = characterName.trim().toLowerCase();
 
   // Fetch character data
@@ -61,15 +65,15 @@ export default async function CharacterPage({ params: asyncParams }) {
     stats,
     titleName,
   } = characterData;
-console.log(character_id)
-  // Fetch character world data using character_id
-  const worldId = await getCharacterWorldData(character_id);
-  const serverName = worldNames[worldId] || "Unknown";
+
+  console.log(character_id);
+
+  // Fetch character world data using the new API
+  const { worldId, serverName } = await getCharacterWorld(character_id);
 
   // Determine if the character is online
   const isOnline = characterData.online_status === "1";
 
-  // experience level
   const maxLevel = prestige_level < 1 ? 120 : 100;
   const currentLevel = parseInt(battle_rank.value, 10);
   const nextLevel = currentLevel + 1;
@@ -103,7 +107,7 @@ console.log(character_id)
             <p className={styles.characterRank}>
               Battle Rank: {battle_rank.value} ~ Prestige: {prestige_level}
             </p>
-            <p className={styles.characterServer}>Server: {serverName}</p>
+            <p className={styles.characterServer}>Server: {serverName || "Unknown"}</p>
             <p className={styles.characterStatus}>
               <span
                 className={`statusDot ${isOnline ? 'online' : 'offline'}`}
@@ -139,7 +143,7 @@ console.log(character_id)
           ></div>
         </div>
         <p className={styles.progressText}>
-          Progress: {battle_rank.percent_to_next}%
+          Progress: {battle_rank.percent_to_next}%{" "}
           {currentLevel < maxLevel && (
             <span className={styles.nextLevel}>
               &nbsp;→ Next Level: {nextLevel}
@@ -184,6 +188,6 @@ console.log(character_id)
         <Killboard character_id={character_id} />
       </section>
 
-    </div >
+    </div>
   );
 }
