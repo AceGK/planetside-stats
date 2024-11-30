@@ -1,4 +1,5 @@
-//api/character/route.js
+// api/character/route.js
+
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
@@ -20,12 +21,13 @@ export async function GET(req) {
     }
 
     const data = await response.json();
+    const character = data.character_list?.[0];
 
-    if (data.character_list?.length > 0) {
-      return NextResponse.json(data.character_list[0]);
-    } else {
+    if (!character) {
       return NextResponse.json({ error: "Character not found" }, { status: 404 });
     }
+
+    return NextResponse.json(character);
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
