@@ -14,8 +14,13 @@ export default function HomePage() {
     e.preventDefault();
 
     if (searchQuery.trim()) {
+      // Convert search query to lowercase for faster API lookups
+      const sanitizedQuery = searchQuery.trim().toLowerCase();
+
       // Navigate based on the selected search type
-      const path = searchType === 'player' ? `/player/${searchQuery}` : `/outfit/${searchQuery}`;
+      const path = searchType === 'player' 
+        ? `/player/${sanitizedQuery}` 
+        : `/outfit/${sanitizedQuery}`;
       router.push(path);
     }
   };

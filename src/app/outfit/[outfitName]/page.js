@@ -68,7 +68,6 @@ async function fetchOutfitData(outfitName) {
   return outfit;
 }
 
-
 async function fetchMemberDetails(memberIds) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
   const idsQuery = memberIds.join(",");
@@ -161,5 +160,3 @@ export default async function OutfitPage({ params: asyncParams }) {
     </div>
   );
 }
-
-

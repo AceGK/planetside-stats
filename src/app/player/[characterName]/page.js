@@ -8,7 +8,6 @@ import getOnlineStatus from "@/utils/getOnlineStatus";
 import { getFactionColor, FactionColoredName } from "@/utils/factions";
 import Killboard from "@/components/character/Killboard";
 
-
 async function getTitleData(titleId) {
   if (!titleId) return null;
 
@@ -26,9 +25,10 @@ async function getTitleData(titleId) {
   return title || null;
 }
 
-
 async function getCharacterData(characterName) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
+
+  // Use `name.first_lower` with lowercase conversion
   const endpoint = `${baseUrl}/character?name.first_lower=${characterName.toLowerCase()}&c:resolve=outfit,stat_history,online_status,title_id`;
 
   const res = await fetch(endpoint);
@@ -48,19 +48,34 @@ async function getCharacterData(characterName) {
   return { ...character, titleName };
 }
 
+// Rate-limited fetch utility
+async function fetchWithRateLimit(urls, limit = 5) {
+  const results = [];
+  for (let i = 0; i < urls.length; i += limit) {
+    const batch = urls.slice(i, i + limit).map((url) =>
+      fetch(url).then((res) => (res.ok ? res.json() : Promise.reject(res)))
+    );
+    results.push(...(await Promise.all(batch)));
+  }
+  return results;
+}
+
 async function getFriendDetails(friendIds) {
   const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
-  const idsQuery = friendIds.join(",");
+  const urls = friendIds.map(
+    (id) =>
+      `${baseUrl}/character?character_id=${id}&c:resolve=outfit&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level,outfit.alias,outfit.name`
+  );
 
-  const endpoint = `${baseUrl}/character?character_id=${idsQuery}&c:resolve=outfit&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level,outfit.alias,outfit.name`;
-  const res = await fetch(endpoint);
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch friend details");
+  try {
+    const results = await fetchWithRateLimit(urls, 10); // Limit to 10 concurrent requests
+    return results
+      .map((result) => result.character_list?.[0])
+      .filter(Boolean); // Filter out null or undefined results
+  } catch (error) {
+    console.error("Error fetching friend details:", error);
+    return [];
   }
-
-  const data = await res.json();
-  return data.character_list || [];
 }
 
 async function getCharacterFriends(characterId) {
@@ -81,7 +96,6 @@ async function getCharacterFriends(characterId) {
   if (friendIds.length === 0) return [];
 
   const friendDetails = await getFriendDetails(friendIds);
-  const onlineStatuses = await getOnlineStatus(friendIds);
 
   return friendList.map((friend) => {
     const friendDetail = friendDetails.find((fd) => fd.character_id === friend.character_id);
@@ -91,24 +105,27 @@ async function getCharacterFriends(characterId) {
       faction_id: friendDetail?.faction_id || null,
       battle_rank: friendDetail?.battle_rank?.value || "N/A",
       prestige_level: friendDetail?.prestige_level || 0,
-      isOnline: onlineStatuses[friend.character_id] || false,
       outfit: friendDetail?.outfit || "n/a",
     };
   }).sort((a, b) => a.name.localeCompare(b.name));
 }
 
+
 export default async function CharacterPage({ params: asyncParams }) {
   const params = await asyncParams;
   const { characterName } = params;
 
+  // Sanitize and convert characterName to lowercase
+  const sanitizedCharacterName = characterName.trim().toLowerCase();
+
   // Fetch character data
-  const characterData = await getCharacterData(characterName);
+  const characterData = await getCharacterData(sanitizedCharacterName);
 
   if (!characterData) {
     return (
       <div className={styles.errorContainer}>
         <h1>Character Not Found</h1>
-        <p>We couldn&apos;t find a character named &rdquo;{characterName}&rdquo;.</p>
+        <p>We couldn&apos;t find a character named &rdquo;{sanitizedCharacterName}&rdquo;.</p>
       </div>
     );
   }
@@ -132,7 +149,6 @@ export default async function CharacterPage({ params: asyncParams }) {
 
   // Fetch friends data
   const friends = await getCharacterFriends(character_id);
-  console.log(friends);
 
   // Determine if the character is online
   const isOnline = characterData.online_status === "1";
@@ -160,7 +176,7 @@ export default async function CharacterPage({ params: asyncParams }) {
               {outfit && (
                 <>
                   {" "}
-                  <Link href={`/outfit/${encodeURIComponent(outfit.name)}`}>
+                  <Link href={`/outfit/${encodeURIComponent(outfit.name.toLowerCase())}`}>
                     [{outfit.alias}]
                   </Link>
                 </>
@@ -169,10 +185,7 @@ export default async function CharacterPage({ params: asyncParams }) {
             <p className={styles.characterRank}>
               Battle Rank: {battle_rank.value} ~ Prestige: {prestige_level}
             </p>
-
-            <p className={styles.characterServer}>
-              Server: {serverName}
-            </p>
+            <p className={styles.characterServer}>Server: {serverName}</p>
             <p className={styles.characterStatus}>
               <span
                 className={`statusDot ${isOnline ? 'online' : 'offline'}`}
@@ -268,7 +281,7 @@ export default async function CharacterPage({ params: asyncParams }) {
                     </td>
                     <td>
                       <Link
-                        href={`/player/${friend.name}`}
+                        href={`/player/${friend.name.toLowerCase()}`}
                       >
                         <FactionColoredName
                           name={friend.name}
@@ -278,7 +291,7 @@ export default async function CharacterPage({ params: asyncParams }) {
 
                       {friend.outfit.alias &&
                         <>
-                          {" "}<Link href={`/outfit/${friend.outfit.name}`}>
+                          {" "}<Link href={`/outfit/${friend.outfit.name.toLowerCase()}`}>
                             [{friend.outfit.alias}]
                           </Link>
                         </>
