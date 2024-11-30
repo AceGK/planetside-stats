@@ -269,14 +269,20 @@ export default async function CharacterPage({ params: asyncParams }) {
                     <td>
                       <Link
                         href={`/player/${friend.name}`}
-                        style={{ textDecoration: "none" }}
                       >
                         <FactionColoredName
                           name={friend.name}
                           factionId={friend.faction_id}
                         />
-                        {friend.outfit.alias && <span> [{friend.outfit.alias}]</span>}
                       </Link>
+
+                      {friend.outfit.alias &&
+                        <>
+                          {" "}<Link href={`/outfit/${friend.outfit.name}`}>
+                            [{friend.outfit.alias}]
+                          </Link>
+                        </>
+                      }
                     </td>
                     <td>
                       {friend.battle_rank} ~ {friend.prestige_level}

@@ -21,7 +21,9 @@ async function fetchKillboardData(character_id) {
     return [];
   }
 
-  const namesEndpoint = `${baseUrl}/character?character_id=${characterIds.join(",")}&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level`;
+  const namesEndpoint = `${baseUrl}/character?character_id=${characterIds.join(
+    ","
+  )}&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level&c:resolve=outfit`;
   const namesRes = await fetch(namesEndpoint, { cache: "no-store" });
 
   if (!namesRes.ok) throw new Error("Failed to fetch character names");
@@ -37,17 +39,21 @@ async function fetchKillboardData(character_id) {
       );
       return {
         characterId: event.character_id,
-        name: matchedCharacter?.name?.first || "Name Unavailable",
+        name: matchedCharacter?.name?.first || "Unknown",
         factionId: matchedCharacter?.faction_id || null,
         kills: event.count,
         battleRank: matchedCharacter?.battle_rank?.value || "N/A",
         prestigeLevel: matchedCharacter?.prestige_level || 0,
+        outfit: {
+          alias: matchedCharacter?.outfit?.alias || null,
+          name: matchedCharacter?.outfit?.name || null,
+        }, // Include both alias and name
         isOnline: onlineStatuses[event.character_id] || false,
       };
     })
     .filter(
       (entry) =>
-        entry.characterId !== character_id
+        entry.characterId !== character_id && entry.name !== "Unknown"
     )
     .slice(0, 100);
 }
@@ -67,7 +73,9 @@ async function fetchDeathBoardData(character_id) {
     return [];
   }
 
-  const attackerEndpoint = `${baseUrl}/character?character_id=${attackerIds.join(",")}&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level`;
+  const attackerEndpoint = `${baseUrl}/character?character_id=${attackerIds.join(
+    ","
+  )}&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level&c:resolve=outfit`;
   const attackerRes = await fetch(attackerEndpoint, { cache: "no-store" });
 
   if (!attackerRes.ok) throw new Error("Failed to fetch attacker details");
@@ -76,25 +84,31 @@ async function fetchDeathBoardData(character_id) {
   const attackers = attackerData.character_list || [];
   const onlineStatuses = await getOnlineStatus(attackerIds);
 
-  return deathEvents.map((event) => {
-    const attacker = attackers.find(
-      (char) => char.character_id === event.character_id
-    );
+  return deathEvents
+    .map((event) => {
+      const attacker = attackers.find(
+        (char) => char.character_id === event.character_id
+      );
 
-    return {
-      attackerId: event.character_id,
-      name: attacker?.name?.first || "Unknown",
-      factionId: attacker?.faction_id || null,
-      deaths: event.count,
-      battleRank: attacker?.battle_rank?.value || "N/A",
-      prestigeLevel: attacker?.prestige_level || 0,
-      isOnline: onlineStatuses[event.character_id] || false,
-    };
-  }).filter(
-    (entry) =>
-      entry.attackerId !== character_id
-  )
-  .slice(0, 100);
+      return {
+        attackerId: event.character_id,
+        name: attacker?.name?.first || "Unknown",
+        factionId: attacker?.faction_id || null,
+        deaths: event.count,
+        battleRank: attacker?.battle_rank?.value || "N/A",
+        prestigeLevel: attacker?.prestige_level || 0,
+        outfit: {
+          alias: attacker?.outfit?.alias || null,
+          name: attacker?.outfit?.name || null,
+        }, // Include both alias and name
+        isOnline: onlineStatuses[event.character_id] || false,
+      };
+    })
+    .filter(
+      (entry) =>
+        entry.attackerId !== character_id && entry.name !== "Unknown"
+    )
+    .slice(0, 100);
 }
 
 export default async function Killboard({ character_id }) {
@@ -111,7 +125,6 @@ export default async function Killboard({ character_id }) {
 
   return (
     <>
-
       <h3>Top Kills</h3>
       {killboard.length > 0 ? (
         <div className="tableContainer">
@@ -141,6 +154,16 @@ export default async function Killboard({ character_id }) {
                         factionId={entry.factionId}
                       />
                     </Link>
+                    {entry.outfit.alias && entry.outfit.name && (
+                      <>
+                        {" "}
+                        <Link
+                          href={`/outfit/${encodeURIComponent(entry.outfit.name)}`}
+                        >
+                          [{entry.outfit.alias}]
+                        </Link>
+                      </>
+                    )}
                   </td>
                   <td>{entry.kills}</td>
                   <td>
@@ -184,6 +207,16 @@ export default async function Killboard({ character_id }) {
                         factionId={entry.factionId}
                       />
                     </Link>
+                    {entry.outfit.alias && entry.outfit.name && (
+                      <>
+                        {" "}
+                        <Link
+                          href={`/outfit/${encodeURIComponent(entry.outfit.name)}`}
+                        >
+                          [{entry.outfit.alias}]
+                        </Link>
+                      </>
+                    )}
                   </td>
                   <td>{entry.deaths}</td>
                   <td>
