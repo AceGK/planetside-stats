@@ -4,9 +4,10 @@ import styles from "./styles.module.scss";
 import FactionLogo from "@/components/FactionLogo";
 import { worldNames, getCharacterWorldData } from "@/utils/world";
 import TimePlayed from "@/components/character/TimePlayed";
-import getOnlineStatus from "@/utils/getOnlineStatus";
 import { getFactionColor, FactionColoredName } from "@/utils/factions";
 import Killboard from "@/components/character/Killboard";
+import Friends from "@/components/character/Friends";
+
 
 async function getTitleData(titleId) {
   if (!titleId) return null;
@@ -48,69 +49,6 @@ async function getCharacterData(characterName) {
   return { ...character, titleName };
 }
 
-// Rate-limited fetch utility
-async function fetchWithRateLimit(urls, limit = 5) {
-  const results = [];
-  for (let i = 0; i < urls.length; i += limit) {
-    const batch = urls.slice(i, i + limit).map((url) =>
-      fetch(url).then((res) => (res.ok ? res.json() : Promise.reject(res)))
-    );
-    results.push(...(await Promise.all(batch)));
-  }
-  return results;
-}
-
-async function getFriendDetails(friendIds) {
-  const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
-  const urls = friendIds.map(
-    (id) =>
-      `${baseUrl}/character?character_id=${id}&c:resolve=outfit&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level,outfit.alias,outfit.name`
-  );
-
-  try {
-    const results = await fetchWithRateLimit(urls, 10); // Limit to 10 concurrent requests
-    return results
-      .map((result) => result.character_list?.[0])
-      .filter(Boolean); // Filter out null or undefined results
-  } catch (error) {
-    console.error("Error fetching friend details:", error);
-    return [];
-  }
-}
-
-async function getCharacterFriends(characterId) {
-  const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
-  const endpoint = `${baseUrl}/characters_friend?character_id=${characterId}`;
-
-  const res = await fetch(endpoint);
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch character friends");
-  }
-
-  const data = await res.json();
-  const characterFriendData = data.characters_friend_list?.[0];
-  const friendList = characterFriendData?.friend_list || [];
-
-  const friendIds = friendList.map((friend) => friend.character_id);
-  if (friendIds.length === 0) return [];
-
-  const friendDetails = await getFriendDetails(friendIds);
-
-  return friendList.map((friend) => {
-    const friendDetail = friendDetails.find((fd) => fd.character_id === friend.character_id);
-    return {
-      ...friend,
-      name: friendDetail?.name?.first || "Unknown",
-      faction_id: friendDetail?.faction_id || null,
-      battle_rank: friendDetail?.battle_rank?.value || "N/A",
-      prestige_level: friendDetail?.prestige_level || 0,
-      outfit: friendDetail?.outfit || "n/a",
-    };
-  }).sort((a, b) => a.name.localeCompare(b.name));
-}
-
-
 export default async function CharacterPage({ params: asyncParams }) {
   const params = await asyncParams;
   const { characterName } = params;
@@ -146,9 +84,6 @@ export default async function CharacterPage({ params: asyncParams }) {
   // Fetch character world data using character_id
   const worldId = await getCharacterWorldData(character_id);
   const serverName = worldNames[worldId] || "Unknown";
-
-  // Fetch friends data
-  const friends = await getCharacterFriends(character_id);
 
   // Determine if the character is online
   const isOnline = characterData.online_status === "1";
@@ -253,62 +188,8 @@ export default async function CharacterPage({ params: asyncParams }) {
 
       {/* Friends Section */}
       <section className={styles.section}>
-        <h2>
-          Friends{" "}
-          <span className="friendsCount">
-            {friends.length > 0 ? `(${friends.length})` : "(0)"}
-          </span>
-        </h2>
-        {friends.length > 0 ? (
-          <div className="tableContainer">
-            <table className="table">
-              <thead>
-                <tr>
-                  <th>Status</th>
-                  <th>Name</th>
-                  <th>BR ~ Prestige</th>
-                </tr>
-              </thead>
-              <tbody>
-                {friends.map((friend, index) => (
-                  <tr key={index}>
-                    <td>
-                      <span
-                        className={`statusDot ${friend.online === "1" ? "online" : "offline"
-                          }`}
-                        data-tooltip={friend.online === "1" ? "Online" : "Offline"}
-                      ></span>
-                    </td>
-                    <td>
-                      <Link
-                        href={`/player/${friend.name.toLowerCase()}`}
-                      >
-                        <FactionColoredName
-                          name={friend.name}
-                          factionId={friend.faction_id}
-                        />
-                      </Link>
-
-                      {friend.outfit.alias &&
-                        <>
-                          {" "}<Link href={`/outfit/${friend.outfit.name.toLowerCase()}`}>
-                            [{friend.outfit.alias}]
-                          </Link>
-                        </>
-                      }
-                    </td>
-                    <td>
-                      {friend.battle_rank} ~ {friend.prestige_level}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p>This character has no friends listed.</p>
-        )}
-      </section>
+  <Friends characterId={character_id} />
+</section>
 
       {/* Killboard Section */}
       <section className={styles.section}>
