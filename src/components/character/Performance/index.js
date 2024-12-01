@@ -41,7 +41,7 @@ const PerformanceStats = ({ characterId }) => {
 
   return (
     <div>
-      <h2>Performance Stats</h2>
+      <h2>Performance</h2>
       {loading ? (
         <p>Loading performance stats...</p>
       ) : error ? (

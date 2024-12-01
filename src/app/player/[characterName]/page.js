@@ -9,6 +9,9 @@ import { getFactionColor, FactionColoredName } from "@/utils/factions";
 import Killboard from "@/components/character/Killboard";
 import Friends from "@/components/character/Friends";
 import Performance from "@/components/character/Performance";
+import { GiRank3 } from "react-icons/gi";
+import { FaUser } from "react-icons/fa";
+
 
 export default async function CharacterPage({ params: asyncParams }) {
   const params = await asyncParams;
@@ -98,7 +101,8 @@ export default async function CharacterPage({ params: asyncParams }) {
 
         {/* General Information */}
         <section className={styles.section}>
-          <h2>General Information</h2>
+          <h2>
+          General</h2>
           <p>
             <strong>Creation Date:</strong>{" "}
             {new Date(times.creation * 1000).toLocaleDateString()}
@@ -112,7 +116,10 @@ export default async function CharacterPage({ params: asyncParams }) {
 
         {/* Battle Rank */}
         <section className={styles.section}>
-          <h2>Battle Rank</h2>
+          <h2>
+            {/* <GiRank3 />  */}
+            Battle Rank
+          </h2>
           <p className={styles.characterRank}>Battle Rank: {currentLevel}</p>
           <p className={styles.characterRank}>Prestige {prestige_level}</p>
           <div className={styles.progressBarContainer}>

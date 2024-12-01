@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FactionColoredName } from "@/utils/factions";
+import { GiCrosshair } from "react-icons/gi";
+
 
 export default function Killboard({ character_id }) {
   const [killboard, setKillboard] = useState([]);
@@ -57,7 +59,10 @@ export default function Killboard({ character_id }) {
 
   return (
     <>
-      <h2>Killboard</h2>
+      <h2>
+        {/* <GiCrosshair />  */}
+        Killboard
+      </h2>
       <h3>Top Kills</h3>
       {killboardLoading ? (
         <p>Loading killboard...</p>

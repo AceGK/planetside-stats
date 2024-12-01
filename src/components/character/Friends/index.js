@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FactionColoredName } from "@/utils/factions";
+import { GiThreeFriends } from "react-icons/gi";
 
 const Friends = ({ characterId }) => {
   const [friends, setFriends] = useState([]);
@@ -36,7 +37,8 @@ const Friends = ({ characterId }) => {
   return (
     <section>
       <h2>
-        Friends{" "}
+        {/* <GiThreeFriends />  */}
+        Friends
         <span className="friendsCount">
           {friends.length > 0 ? `(${friends.length})` : ""}
         </span>
