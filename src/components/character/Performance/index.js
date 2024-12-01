@@ -51,7 +51,7 @@ const PerformanceStats = ({ characterId }) => {
           <p><strong>Total Kills:</strong> {Number(stats.kills).toLocaleString()}</p>
           <p><strong>Total Deaths:</strong> {Number(stats.deaths).toLocaleString()}</p>
           <p><strong>K/D Ratio:</strong> {stats.kdRatio}</p>
-          <p><strong>One-Life Max Kills:</strong> {Number(stats.oneLifeMaxKills).toLocaleString()}</p>
+          <p><strong>Highest Kill Streak:</strong> {Number(stats.oneLifeMaxKills).toLocaleString()}</p>
         </>
       ) : (
         <p>No stats available.</p>

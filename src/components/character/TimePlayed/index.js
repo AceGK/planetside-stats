@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import styles from "./styles.module.scss";
 
 const TimePlayed = ({ minutesPlayed }) => {
-  const [timeUnit, setTimeUnit] = useState("minutes");
+  const [timeUnit, setTimeUnit] = useState("hours");
 
   const calculateTimePlayed = () => {
     if (timeUnit === "hours") {
