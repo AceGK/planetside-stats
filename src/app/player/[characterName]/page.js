@@ -149,7 +149,7 @@ export default async function CharacterPage({ params: asyncParams }) {
         </section>
 
         {/* Key Stats */}
-        <section className={styles.section}>
+        {/* <section className={styles.section}>
           <h2>Key Stats</h2>
           <div className={styles.statsGrid}>
             {restCharacterData.stats.stat_history.map((stat, index) => (
@@ -158,7 +158,7 @@ export default async function CharacterPage({ params: asyncParams }) {
               </div>
             ))}
           </div>
-        </section>
+        </section> */}
 
         {/* Friends */}
         <section className={styles.section}>

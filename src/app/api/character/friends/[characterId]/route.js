@@ -1,5 +1,3 @@
-//api/character/friends/[characterId]/route.js
-
 import { NextResponse } from "next/server";
 
 const SERVICE_ID = process.env.SERVICE_ID;
@@ -20,7 +18,7 @@ const getFriendDetails = async (friendIds) => {
   const urls = friendIds.map(
     (id) =>
       `${baseUrl}/character?character_id=${id}&c:resolve=outfit&c:show=character_id,name.first,faction_id,battle_rank.value,prestige_level,outfit.alias,outfit.name`
-  );
+  ); // Removed c:sort=name.first:1 since sorting is done after fetch
 
   try {
     const results = await fetchWithRateLimit(urls, 10);
@@ -51,21 +49,22 @@ const getCharacterFriends = async (characterId) => {
 
   const friendDetails = await getFriendDetails(friendIds);
 
-  return friendList
-    .map((friend) => {
-      const friendDetail = friendDetails.find(
-        (fd) => fd.character_id === friend.character_id
-      );
-      return {
-        ...friend,
-        name: friendDetail?.name?.first || "Unknown",
-        faction_id: friendDetail?.faction_id || null,
-        battle_rank: friendDetail?.battle_rank?.value || "N/A",
-        prestige_level: friendDetail?.prestige_level || 0,
-        outfit: friendDetail?.outfit || "n/a",
-      };
-    })
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const friends = friendList.map((friend) => {
+    const friendDetail = friendDetails.find(
+      (fd) => fd.character_id === friend.character_id
+    );
+    return {
+      ...friend,
+      name: friendDetail?.name?.first || "Unknown",
+      faction_id: friendDetail?.faction_id || null,
+      battle_rank: friendDetail?.battle_rank?.value || "N/A",
+      prestige_level: friendDetail?.prestige_level || 0,
+      outfit: friendDetail?.outfit || "n/a",
+    };
+  });
+
+  // Sort friends by name
+  return friends.sort((a, b) => a.name.localeCompare(b.name));
 };
 
 export async function GET(req, context) {

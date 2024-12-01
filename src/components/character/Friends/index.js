@@ -1,17 +1,44 @@
-import React from "react";
+'use client'; // Ensure this component runs on the client side
+
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { FactionColoredName } from "@/utils/factions";
 
-const Friends = async ({ characterId }) => {
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/character/friends/${characterId}`
-  );
+const Friends = ({ characterId }) => {
+  const [friends, setFriends] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!response.ok) {
-    return <p>Failed to fetch friends data. Please try again later.</p>;
+  useEffect(() => {
+    async function fetchFriends() {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BASE_URL}/api/character/friends/${characterId}`
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch friends data.");
+        }
+
+        const data = await response.json();
+        setFriends(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchFriends();
+  }, [characterId]);
+
+  if (isLoading) {
+    return <p>Loading friends...</p>;
   }
 
-  const friends = await response.json();
+  if (error) {
+    return <p>{error}</p>;
+  }
 
   if (friends.length === 0) {
     return <p>This character has no friends.</p>;
@@ -39,9 +66,7 @@ const Friends = async ({ characterId }) => {
               <tr key={index}>
                 <td>
                   <span
-                    className={`statusDot ${
-                      friend.online === "1" ? "online" : "offline"
-                    }`}
+                    className={`statusDot ${friend.online === "1" ? "online" : "offline"}`}
                     data-tooltip={friend.online === "1" ? "Online" : "Offline"}
                   ></span>
                 </td>

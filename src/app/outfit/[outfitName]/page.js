@@ -2,7 +2,6 @@ import React from "react";
 import Link from "next/link"; // Import Link from Next.js
 import styles from "./styles.module.scss";
 import FactionLogo from "@/components/FactionLogo";
-import getOnlineStatus from "@/utils/getOnlineStatus";
 import { FactionColoredName } from "@/utils/factions";
 
 async function fetchOutfitData(outfitName) {
@@ -83,6 +82,25 @@ async function fetchMemberDetails(memberIds) {
   return data.character_list || [];
 }
 
+// Moved getOnlineStatus function here
+async function getOnlineStatus(characterIds) {
+  const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
+  const endpoint = `${baseUrl}/characters_online_status?character_id=${characterIds.join(",")}`;
+
+  const res = await fetch(endpoint);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch online statuses");
+  }
+
+  const data = await res.json();
+  const statusList = data.characters_online_status_list || [];
+  return statusList.reduce((acc, status) => {
+    acc[status.character_id] = status.online_status === "1"; // 1 = online, 0 = offline
+    return acc;
+  }, {});
+}
+
 export default async function OutfitPage({ params: asyncParams }) {
   const params = await asyncParams;
   
@@ -134,10 +152,12 @@ export default async function OutfitPage({ params: asyncParams }) {
                   <tr key={member.character_id}>
                     <td>{member?.rank || "Unknown"}</td>
                     <td>
-                      <span
-                        className={`statusDot ${member.isOnline ? "online" : "offline"}`}
-                        data-tooltip={member.isOnline ? "Online" : "Offline"}
-                      ></span>{" "}
+                      {member.isOnline && ( // Only show statusDot if online
+                        <span
+                          className="statusDot online"
+                          data-tooltip="Online"
+                        ></span>
+                      )}{" "}
                       <Link href={`/player/${member?.name?.first}`} passHref>
                         <FactionColoredName
                           name={member?.name?.first || "Unknown"}
@@ -160,3 +180,4 @@ export default async function OutfitPage({ params: asyncParams }) {
     </div>
   );
 }
+
