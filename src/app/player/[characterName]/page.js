@@ -45,11 +45,11 @@ export default async function CharacterPage({ params: asyncParams }) {
     console.log(characterData)
     console.log(character_id)
 
-    // const isOnline = online_status === "1";
+    const isOnline = online_status === "1";
 
-    // const maxLevel = prestige_level < 1 ? 120 : 100;
-    // const currentLevel = parseInt(battle_rank.value, 10);
-    // const nextLevel = currentLevel + 1;
+    const maxLevel = prestige_level < 1 ? 120 : 100;
+    const currentLevel = parseInt(battle_rank.value, 10);
+    const nextLevel = currentLevel + 1;
 
     return (
       <div className={styles.container}>
@@ -62,10 +62,10 @@ export default async function CharacterPage({ params: asyncParams }) {
         >
           <div className={styles.headerContent}>
             <div className={styles.characterDetails}>
-              {/* <TitleName titleId={title_id} /> */}
+              <TitleName titleId={title_id} />
               <h1 className={styles.characterName}>
                 <FactionColoredName name={name.first} factionId={faction_id} />
-                {/* {outfit && (
+                {outfit && (
                   <>
                     {" "}
                     <Link
@@ -76,9 +76,9 @@ export default async function CharacterPage({ params: asyncParams }) {
                       [{outfit.alias}]
                     </Link>
                   </>
-                )} */}
+                )}
               </h1>
-              {/* <p className={styles.characterRank}>
+              <p className={styles.characterRank}>
                 Battle Rank: {battle_rank.value}
               </p>
               <p className={styles.characterRank}>
@@ -93,14 +93,14 @@ export default async function CharacterPage({ params: asyncParams }) {
                 <span className={styles.statusText}>
                   {isOnline ? "Online" : "Offline"}
                 </span>
-              </p> */}
+              </p>
             </div>
           </div>
-          {/* <FactionLogo factionId={faction_id} className={styles.factionLogo} /> */}
+          <FactionLogo factionId={faction_id} className={styles.factionLogo} />
         </header>
 
         {/* General Information */}
-        {/* <section className={styles.section}>
+        <section className={styles.section}>
           <h2>
           General</h2>
           <p>
@@ -112,11 +112,12 @@ export default async function CharacterPage({ params: asyncParams }) {
             {new Date(times.last_login * 1000).toLocaleString()}
           </p>
           <TimePlayed minutesPlayed={times.minutes_played} />
-        </section> */}
+        </section>
 
         {/* Battle Rank */}
-        {/* <section className={styles.section}>
+        <section className={styles.section}>
           <h2>
+
             Battle Rank
           </h2>
           <p className={styles.characterRank}>Battle Rank: {currentLevel}</p>
@@ -137,7 +138,7 @@ export default async function CharacterPage({ params: asyncParams }) {
               </span>
             )}
           </p>
-        </section> */}
+        </section>
 
         {/* Certifications */}
         {/* <section className={styles.section}>
