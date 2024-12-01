@@ -141,7 +141,7 @@ export default async function CharacterPage({ params: asyncParams }) {
         </section>
 
         {/* Certifications */}
-        {/* <section className={styles.section}>
+        <section className={styles.section}>
           <h2>Certifications</h2>
           <div>
             <div>
@@ -177,7 +177,7 @@ export default async function CharacterPage({ params: asyncParams }) {
             Progress to Next Point:{" "}
             {(parseFloat(certs.percent_to_next) * 100).toFixed(2)}%
           </p>
-        </section> */}
+        </section>
 
         {/* Other Components */}
         <section className={styles.section}>
