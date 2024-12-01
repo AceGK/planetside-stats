@@ -1,14 +1,18 @@
-'use client'
+'use client';
 import React, { useState } from "react";
-import styles from "./styles.module.scss"; 
+import styles from "./styles.module.scss";
 
 const TimePlayed = ({ minutesPlayed }) => {
   const [timeUnit, setTimeUnit] = useState("minutes");
 
   const calculateTimePlayed = () => {
-    if (timeUnit === "hours") return (minutesPlayed / 60).toFixed(2);
-    if (timeUnit === "days") return (minutesPlayed / 1440).toFixed(2);
-    return minutesPlayed.toLocaleString();
+    if (timeUnit === "hours") {
+      return (minutesPlayed / 60).toLocaleString(undefined, { minimumFractionDigits: 2 });
+    }
+    if (timeUnit === "days") {
+      return (minutesPlayed / 1440).toLocaleString(undefined, { minimumFractionDigits: 2 });
+    }
+    return parseInt(minutesPlayed, 10).toLocaleString();
   };
 
   return (

@@ -1,5 +1,3 @@
-// api/character/route.js
-
 import { NextResponse } from "next/server";
 
 export async function GET(req) {
@@ -12,7 +10,7 @@ export async function GET(req) {
 
   try {
     const baseUrl = `https://census.daybreakgames.com/s:${process.env.SERVICE_ID}/get/ps2:v2`;
-    const endpoint = `${baseUrl}/character?name.first_lower=${characterName.toLowerCase()}&c:resolve=outfit,stat_history,online_status,title_id`;
+    const endpoint = `${baseUrl}/character?name.first_lower=${characterName.toLowerCase()}&c:resolve=outfit,online_status,title_id&c:show=character_id,name,faction_id,battle_rank,certs,prestige_level,times,title_id`;
 
     const response = await fetch(endpoint);
 
@@ -27,7 +25,21 @@ export async function GET(req) {
       return NextResponse.json({ error: "Character not found" }, { status: 404 });
     }
 
-    return NextResponse.json(character);
+    // Explicitly return only the fields you want
+    const filteredCharacter = {
+      character_id: character.character_id,
+      name: character.name,
+      faction_id: character.faction_id,
+      battle_rank: character.battle_rank,
+      certs: character.certs,
+      prestige_level: character.prestige_level,
+      times: character.times,
+      outfit: character.outfit, // Include only if outfit info is needed
+      title_id: character.title_id,
+      online_status: character.online_status,
+    };
+
+    return NextResponse.json(filteredCharacter);
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

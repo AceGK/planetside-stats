@@ -133,7 +133,7 @@
 }
 
 
-.progressBarContainer {
+.progressBarContainer, .certProgressContainer {
   width: 100%; 
   background-color: #8f8f8f3d; 
   border-radius: 10px;
@@ -157,4 +157,10 @@
 
 .nextLevel {
   color: #888;
+}
+
+.certProgressBar {
+  height: 100%;
+  background: linear-gradient(to right, #4caf50, #8bc34a);
+  transition: width 0.4s ease;
 }

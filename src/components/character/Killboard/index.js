@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
@@ -57,6 +57,7 @@ export default function Killboard({ character_id }) {
 
   return (
     <>
+      <h2>Killboard</h2>
       <h3>Top Kills</h3>
       {killboardLoading ? (
         <p>Loading killboard...</p>
